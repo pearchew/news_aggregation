@@ -57,25 +57,19 @@ def parse_github_url(url):
         return owner, repo
     return None, None
 
-
-# # Example usage for save_github_readme
-# if __name__ == "__main__":
-#     # From URL: https://github.com/deepinsight/insightface
-#     # owner = deepinsight, repo = insightface
-#     save_github_readme("deepinsight", "insightface")
-
-# Apply the parsing function to the 'url' column
-# This creates two new columns in the dataframe
 today = datetime.now().strftime("%Y-%m-%d")
-file_path = Path('outputs')/f'gh_python_en_daily_{today}.csv'
-df = pd.read_csv(file_path)
-df[['owner', 'repo_name']] = df['url'].apply(lambda x: pd.Series(parse_github_url(x)))
+file_path_repo = Path('outputs')/f'gh_repos_daily_{today}.csv'
+file_path_dev = Path('outputs')/f'gh_devs_daily_{today}.csv'
+df_repo = pd.read_csv(file_path_repo)
+df_dev = pd.read_csv(file_path_dev)[['username', 'repo_name', 'repo_url']]
+df_repo[['owner', 'repo_name']] = df_repo['url'].apply(lambda x: pd.Series(parse_github_url(x)))
 
-# Display the first few rows to verify
 print("Extracted Owner and Repo names:")
-print(df[['url', 'owner', 'repo_name']].head())
-df.to_csv(file_path, index=False)
-print(f"\nUpdated CSV saved to {file_path}")
+print(df_repo[['url', 'owner', 'repo_name']].head())
+print(df_dev[['repo_url', 'username', 'repo_name']].head())
 
-for owner, repo_name in zip(df['owner'], df['repo_name']):
+for owner, repo_name in zip(df_repo['owner'], df_repo['repo_name']):
+    save_github_readme(owner, repo_name)
+    
+for owner, repo_name in zip(df_dev['username'], df_dev['repo_name']):
     save_github_readme(owner, repo_name)

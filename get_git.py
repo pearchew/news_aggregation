@@ -3,60 +3,13 @@ import csv
 from datetime import datetime
 import gtrending
 
-def demonstrate_utilities():
-    print("--- 1. UTILITY AND CONVERSION FUNCTIONS ---")
-    
-    # List available programming languages
-    print("Available programming languages (first 3):")
-    langs = gtrending.languages_list()
-    print([lang['name'] for lang in langs[:10]])
-
-    # List available spoken languages
-    print("\nAvailable spoken languages (first 3):")
-    spoken_langs = gtrending.spoken_languages_list()
-    print([lang['name'][0] for lang in spoken_langs[:3]])
-
-    # Convert names to API parameter format
-    print("\nConverting 'C++' to param:", gtrending.convert_language_name_to_param("c++"))
-    print("Converting 'English' to code:", gtrending.convert_spoken_language_name_to_code("English"))
-
-    # Validating inputs
-    print("\nValidation Checks:")
-    print("Is 'python' a valid language?", gtrending.check_language("python"))
-    print("Is 'en' a valid spoken language code?", gtrending.check_spoken_language_code("en"))
-    print("Is 'monthly' a valid time range?", gtrending.check_since("monthly"))
-    print("Is 'yearly' a valid time range?", gtrending.check_since("yearly"))
-    print("\n" + "="*50 + "\n")
-
-
-def demonstrate_fetch_developers():
-    print("--- 2. FETCHING TRENDING DEVELOPERS ---")
-    
-    # Fetch developers trending today in Python who have a sponsor URL
-    devs = gtrending.fetch_developers(language="python", since="daily", sponsorable=True)
-    
-    if devs:
-        print(f"Found {len(devs)} sponsorable Python developers trending today.")
-        print(f"Top developer: {devs[0]['name']} ({devs[0]['username']})")
-        print(f"Trending for repo: {devs[0]['repo']['name'] if devs[0]['repo'] else 'N/A'}")
-    else:
-        print("No sponsorable Python developers found trending today.")
-    print("\n" + "="*50 + "\n")
-
-
 def fetch_and_save_repos():
-    print("--- 3. FETCHING REPOSITORIES & SAVING TO CSV ---")
-    
-    # Set our filters
-    filter_lang = "mixed"
-    filter_spoken = "mixed"  # English
+    print("--- FETCHING REPOSITORIES & SAVING TO CSV ---")
     filter_since = "daily"
     
-    print(f"Fetching {filter_since} trending {filter_lang} repositories (Spoken Language: {filter_spoken})...")
+    print(f"Fetching {filter_since} trending repositories...")
     
     repos = gtrending.fetch_repos(
-        # language=filter_lang,
-        # spoken_language_code=filter_spoken,
         since=filter_since
     )
     
@@ -70,8 +23,8 @@ def fetch_and_save_repos():
     
     # Format the filename: gh_{applied filters}_{date_scraped}.csv
     date_scraped = datetime.now().strftime("%Y-%m-%d")
-    applied_filters = f"{filter_lang}_{filter_spoken}_{filter_since}"
-    filename = f"gh_{applied_filters}_{date_scraped}.csv"
+    applied_filters = f"{filter_since}"
+    filename = f"gh_repos_{applied_filters}_{date_scraped}.csv"
     filepath = os.path.join(output_dir, filename)
     
     # Get the headers from the first repository dictionary keys
@@ -93,8 +46,68 @@ def fetch_and_save_repos():
             
     print(f"Successfully saved {len(repos)} repositories to '{filepath}'")
 
+def fetch_and_save_developers():
+    print("--- FETCHING DEVELOPERS & SAVING TO CSV ---")
+    
+    # Set our filters
+    # Note: Developer trending does not utilize spoken language filters
+    filter_since = "daily"
+    
+    print(f"Fetching {filter_since} trending developers...")
+    
+    devs = gtrending.fetch_developers(
+        since=filter_since
+    )
+    
+    if not devs:
+        print("No developers found for these filters.")
+        return
 
+    # Create the outputs directory if it doesn't exist
+    output_dir = "outputs"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Format the filename: gh_devs_{applied filters}_{date_scraped}.csv
+    date_scraped = datetime.now().strftime("%Y-%m-%d")
+    applied_filters = f"{filter_since}"
+    filename = f"gh_devs_{applied_filters}_{date_scraped}.csv"
+    filepath = os.path.join(output_dir, filename)
+    
+    flattened_devs = []
+    for dev in devs:
+        # Create a copy to avoid mutating the original data
+        flat_dev = dev.copy()
+        
+        # Extract repo dictionary if it exists
+        repo_data = flat_dev.pop('repo', {})
+        
+        if isinstance(repo_data, dict):
+            flat_dev['repo_name'] = repo_data.get('name', '')
+            flat_dev['repo_url'] = repo_data.get('url', '')
+            flat_dev['repo_description'] = repo_data.get('description', '')
+            flat_dev['repo_descriptionUrl'] = repo_data.get('descriptionUrl', '')
+        else:
+            # Fallback if repo is missing or empty
+            flat_dev['repo_name'] = ''
+            flat_dev['repo_url'] = ''
+            flat_dev['repo_description'] = ''
+            flat_dev['repo_descriptionUrl'] = ''
+            
+        flattened_devs.append(flat_dev)
+    
+    # Get the headers from the first flattened developer dictionary keys
+    headers = list(flattened_devs[0].keys())
+    
+    # Write to CSV
+    with open(filepath, mode="w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=headers)
+        writer.writeheader()
+        
+        for dev in flattened_devs:
+            writer.writerow(dev)
+            
+    print(f"Successfully saved {len(flattened_devs)} developers to '{filepath}'")
+    
 if __name__ == "__main__":
-    # demonstrate_utilities()
-    # demonstrate_fetch_developers()
     fetch_and_save_repos()
+    fetch_and_save_developers()
