@@ -48,15 +48,15 @@ def fetch_and_save_repos():
     print("--- 3. FETCHING REPOSITORIES & SAVING TO CSV ---")
     
     # Set our filters
-    filter_lang = "python"
-    filter_spoken = "en"  # English
+    filter_lang = "mixed"
+    filter_spoken = "mixed"  # English
     filter_since = "daily"
     
     print(f"Fetching {filter_since} trending {filter_lang} repositories (Spoken Language: {filter_spoken})...")
     
     repos = gtrending.fetch_repos(
-        language=filter_lang,
-        spoken_language_code=filter_spoken,
+        # language=filter_lang,
+        # spoken_language_code=filter_spoken,
         since=filter_since
     )
     

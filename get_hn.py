@@ -70,16 +70,16 @@ def scrape_hn_to_csv():
 
     all_stories = []
 
-    # 2. Fetch the top 20 Ask HN stories (sorted by highest score)
-    ask_stories = get_top_items_for_category("askstories", "Ask HN", limit=20, sort_by_score=True)
+    # 2. Fetch the top 50 Ask HN stories (sorted by highest score)
+    ask_stories = get_top_items_for_category("askstories", "Ask HN", limit=50, sort_by_score=True)
     all_stories.extend(ask_stories)
 
-    # 3. Fetch the top 20 Show HN stories (sorted by highest score)
-    show_stories = get_top_items_for_category("showstories", "Show HN", limit=20, sort_by_score=True)
+    # 3. Fetch the top 50 Show HN stories (sorted by highest score)
+    show_stories = get_top_items_for_category("showstories", "Show HN", limit=50, sort_by_score=True)
     all_stories.extend(show_stories)
 
-    # 4. Fetch the 30 Top Stories of the day (already ranked by HN)
-    top_stories = get_top_items_for_category("topstories", "Top Story", limit=30, sort_by_score=False)
+    # 4. Fetch the 50 Top Stories of the day (already ranked by HN)
+    top_stories = get_top_items_for_category("topstories", "Top Story", limit=50, sort_by_score=False)
     all_stories.extend(top_stories)
 
     if not all_stories:

@@ -47,7 +47,7 @@ def main():
     today = datetime.now().strftime("%Y-%m-%d")
     output_folder = Path("outputs")
     readme_folder = output_folder / "READMEs"
-    output_csv = output_folder / f"repo_insights_daily_{today}.csv"
+    output_csv = output_folder / Path("gh_insights") / Path("csv") / f"repo_insights_daily_{today}.csv"
 
     if not readme_folder.exists():
         print(f"Could not find the folder {readme_folder}. Have you run get_git_readme.py today?")

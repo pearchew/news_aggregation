@@ -44,8 +44,9 @@ def generate_executive_summary(repo_data_string, model_name="gemma4:e4b"):
     
     Based on this data, write a 5-10 bullet points (adjust the amount of bullet points as you see fit) that act as a summary of the emerging trends in software development this week.
     Focus on what technologies are gaining traction, what problems developers are trying to solve, and any notable shifts in the ecosystem.
-    In each bullet point, make sure to include the relevant repository names and their key topics to provide context.
-    The tone should be concise, insightful, and suitable for a CTO audience looking to stay informed about the latest trends in the software development world.
+    At the end of each bullet point, make sure to include the relevant repository names e.g. "(e.g. Repo1, Repo2)" that support that trend.
+    
+    ONLY provide the bullet points as the output, do NOT include any additional commentary or explanations.
     """
     
     try:
@@ -63,8 +64,9 @@ def main():
     # Setup paths
     today = datetime.now()
     today_str = today.strftime("%Y-%m-%d")
-    output_folder = Path("outputs")
-    output_md = output_folder / f"weekly_digest_{today_str}.md"
+    output_folder = Path("outputs") / Path("gh_insights")
+    output_folder.mkdir(parents=True, exist_ok=True)
+    output_md = output_folder / f"past_7_days_digest_{today_str}.md"
 
     print("Gathering insights from the past 7 days...")
     
@@ -74,7 +76,7 @@ def main():
     # Loop backwards through the past 7 days (including today)
     for i in range(7):
         target_date = (today - timedelta(days=i)).strftime("%Y-%m-%d")
-        input_csv = output_folder / f"repo_insights_daily_{target_date}.csv"
+        input_csv = output_folder/ Path("csv")/ f"repo_insights_daily_{target_date}.csv"
 
         if input_csv.exists():
             print(f"  - Found data for {target_date}")

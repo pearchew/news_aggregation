@@ -1,3 +1,6 @@
 gh_*.csv
 hn_*.csv
-*.md
+hn_*.md
+gh_python_*.csv
+hn_python_*.csv
+README_*.md
