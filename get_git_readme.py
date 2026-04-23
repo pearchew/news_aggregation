@@ -57,19 +57,23 @@ def parse_github_url(url):
         return owner, repo
     return None, None
 
-today = datetime.now().strftime("%Y-%m-%d")
-file_path_repo = Path('outputs')/f'gh_repos_daily_{today}.csv'
-file_path_dev = Path('outputs')/f'gh_devs_daily_{today}.csv'
-df_repo = pd.read_csv(file_path_repo)
-df_dev = pd.read_csv(file_path_dev)[['username', 'repo_name', 'repo_url']]
-df_repo[['owner', 'repo_name']] = df_repo['url'].apply(lambda x: pd.Series(parse_github_url(x)))
+def main():
+    today = datetime.now().strftime("%Y-%m-%d")
+    file_path_repo = Path('outputs')/f'gh_repos_daily_{today}.csv'
+    file_path_dev = Path('outputs')/f'gh_devs_daily_{today}.csv'
+    df_repo = pd.read_csv(file_path_repo)
+    df_dev = pd.read_csv(file_path_dev)[['username', 'repo_name', 'repo_url']]
+    df_repo[['owner', 'repo_name']] = df_repo['url'].apply(lambda x: pd.Series(parse_github_url(x)))
 
-print("Extracted Owner and Repo names:")
-print(df_repo[['url', 'owner', 'repo_name']].head())
-print(df_dev[['repo_url', 'username', 'repo_name']].head())
+    print("Extracted Owner and Repo names:")
+    print(df_repo[['url', 'owner', 'repo_name']].head())
+    print(df_dev[['repo_url', 'username', 'repo_name']].head())
 
-for owner, repo_name in zip(df_repo['owner'], df_repo['repo_name']):
-    save_github_readme(owner, repo_name)
+    for owner, repo_name in zip(df_repo['owner'], df_repo['repo_name']):
+        save_github_readme(owner, repo_name)
+        
+    for owner, repo_name in zip(df_dev['username'], df_dev['repo_name']):
+        save_github_readme(owner, repo_name)
     
-for owner, repo_name in zip(df_dev['username'], df_dev['repo_name']):
-    save_github_readme(owner, repo_name)
+if __name__ == "__main__":
+    main()

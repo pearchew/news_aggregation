@@ -2,28 +2,33 @@ import csv
 from pathlib import Path
 from datetime import datetime, timedelta
 import ollama
+import re
 import requests
+import time
 
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
+
 
 def send_to_discord(webhook_url, content):
     """
     Sends the generated summary to a Discord channel via webhook.
     """
     print("\nSending summary to Discord...")
-    
+
     # Discord has a 2000 character limit for the 'content' field.
     # If the summary is too long, we truncate it to avoid a 400 Bad Request error.
     if len(content) > 2000:
-        print("Warning: Digest exceeds 2000 characters. Truncating for Discord limit...")
+        print(
+            "Warning: Digest exceeds 2000 characters. Truncating for Discord limit..."
+        )
         content = content[:1993] + "..."
-        
+
     payload = {
         "content": content,
-        "username": "Trending Repo Digest", # You can customize the bot's name here
-        "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" # Optional GitHub logo
+        "username": "Trending Repo Digest",  # You can customize the bot's name here
+        "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",  # Optional GitHub logo
     }
-    
+
     try:
         response = requests.post(webhook_url, json=payload)
         response.raise_for_status()
@@ -31,97 +36,219 @@ def send_to_discord(webhook_url, content):
     except requests.exceptions.RequestException as e:
         print(f"❌ Failed to send to Discord: {e}")
 
+
 def generate_executive_summary(repo_data_string, model_name="gemma4:e4b"):
     """
     Sends the aggregated repository data to Ollama to generate a weekly trend summary.
     """
-    prompt = f"""
-    You are a senior technical analyst providing a weekly digest to a CTO. 
-    Here are the top trending GitHub repositories over the past 7 days, including their topics, goals, and use cases.
-    Some repositories might appear multiple times if they trended on multiple days.
-    
-    {repo_data_string}
-    
-    Based on this data, write a 5-10 bullet points (adjust the amount of bullet points as you see fit) that act as a summary of the emerging trends in software development this week.
-    Focus on what technologies are gaining traction, what problems developers are trying to solve, and any notable shifts in the ecosystem.
-    At the end of each bullet point, make sure to include the relevant repository names e.g. "(e.g. Repo1, Repo2)" that support that trend.
-    
-    ONLY provide the bullet points as the output, do NOT include any additional commentary or explanations.
+    prompt = f"""You are a senior technical analyst providing a weekly digest to a CTO. 
+Your task is to group the following provided repositories into 5 to 7 emerging technology trends.
+
+### TRENDING REPOSITORIES ###
+{repo_data_string}
+
+### INSTRUCTIONS ###
+Write a 5-7 bullet point summary of the emerging trends found ONLY in the <repositories> data above. 
+Focus on what technologies are gaining traction and what problems developers are trying to solve.
+You must extract the EXACT text from the <name> tags to prove your trends.
+
+You MUST follow a two-step process:
+1. First, create a <think> block. Inside this block, analyze the data, group the repositories by trend, and verify that you have their exact <name> tags correct.
+2. After the </think> block closes, output your final summary using this EXACT nested format:
+
+- **[Trend Name]**
+  - Repositories: [name1, name2]
+  - Summary: [1-2 sentences describing the trend based on the data]
+
+You MUST use this EXACT nested format for your output. List the repositories BEFORE writing the summary:
+
+- **[Trend Name]**
+  - Repositories: [name1, name2]
+  - Summary: [1-2 sentences describing the trend based on the data]
+
+Example Output:
+- **Rise of Autonomous AI Agents**
+  - Repositories: agentic-sdlc-handbook, ai-agents-for-beginners
+  - Summary: Tools and frameworks for building and orchestrating AI agents are dominating, focusing on automating complex workflows and software development lifecycles.
+
+Begin the bullet points now:"""
+
+    try:
+        response = ollama.chat(
+            model=model_name,
+            messages=[{"role": "user", "content": prompt}],
+            options={"temperature": 0.0},
+        )
+        raw_content = response["message"]["content"]
+        clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+        return clean_content
+    except Exception as e:
+        print(f"Ollama Error: {e}")
+        return None
+
+def generate_fun_pick(repo_data_string, model_name="qwen3:8b"):
     """
+    Asks the model to find the most quirky, unique, or fun project in the dataset.
+    """
+    prompt = f"""You are a senior technical analyst providing a weekly digest to a CTO. 
+Your task is to find the single most "fun", quirky, or uniquely niche project from the provided repositories.
+
+### TRENDING REPOSITORIES ###
+{repo_data_string}
+
+### INSTRUCTIONS ###
+Select ONE repository that stands out as a "fun pick". This should be something that solves a highly specific, unusual problem, is gamified, or is just generally entertaining compared to standard enterprise tools.
+
+You MUST follow a two-step process:
+1. First, create a <think> block. Inside this block, evaluate the repositories for their "fun" or "quirky" factor. Choose the best one and note its exact <name>.
+2. After the </think> block closes, output your selection using this EXACT format:
+
+**🎉 Fun Pick of the Week: [Exact Repo Name]**
+[2-3 sentences explaining what it does and why it's a fun, quirky, or unique project that brings a little joy or novelty to the tech space.]
+"""
     
     try:
         response = ollama.chat(
             model=model_name,
             messages=[{'role': 'user', 'content': prompt}],
-            options={'temperature': 0.6}
+            options={'temperature': 0.4} # Slightly higher temperature here to allow a bit of personality
         )
-        return response['message']['content']
+        
+        raw_content = response['message']['content']
+        clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+        return clean_content
+        
     except Exception as e:
-        print(f"Ollama Error: {e}")
-        return None
+        print(f"Ollama Error in fun pick: {e}")
+        return ""
+
+def generate_deep_dive_recommendation(repo_data_string, model_name="qwen3:8b"):
+    """
+    Asks the model to highlight one specific repository that warrants serious enterprise investigation.
+    """
+    prompt = f"""You are a senior technical analyst providing a weekly digest to a CTO. 
+Your task is to identify ONE repository from the provided data that has the highest potential for real-world enterprise application, ROI, or strategic advantage.
+
+### TRENDING REPOSITORIES ###
+{repo_data_string}
+
+### INSTRUCTIONS ###
+Select the ONE repository that the CTO and engineering leadership should seriously investigate this week.
+
+You MUST follow a two-step process:
+1. First, create a <think> block. Inside this block, evaluate the repositories based on enterprise value, potential to reduce costs, improve developer velocity, or solve major architectural pain points. Choose the strongest candidate and note its exact <name>.
+2. After the </think> block closes, output your recommendation using this EXACT format:
+
+**🔍 CTO Deep Dive Recommendation: [Exact Repo Name]**
+**Why you should care:** [2-3 sentences providing a hard, business-focused justification on its real-world application, potential ROI, or how it solves a critical enterprise bottleneck. Speak directly to the CTO.]
+"""
+    
+    try:
+        response = ollama.chat(
+            model=model_name,
+            messages=[{'role': 'user', 'content': prompt}],
+            options={'temperature': 0.0} # Keep this at 0.0 for strict, serious analytical focus
+        )
+        
+        raw_content = response['message']['content']
+        clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+        return clean_content
+        
+    except Exception as e:
+        print(f"Ollama Error in deep dive: {e}")
+        return ""
 
 def main():
-    # Setup paths
     today = datetime.now()
     today_str = today.strftime("%Y-%m-%d")
     output_folder = Path("outputs") / Path("gh_insights")
     output_folder.mkdir(parents=True, exist_ok=True)
-    output_md = output_folder / f"past_7_days_digest_{today_str}.md"
+    output_md = output_folder / f"past_day_digest_{today_str}.md"
 
-    print("Gathering insights from the past 7 days...")
-    
-    aggregated_data = ""
+    print("Gathering insights from the past day...")
+    aggregated_data = "<repositories>\n"
     files_processed = 0
-
-    # Loop backwards through the past 7 days (including today)
-    for i in range(7):
+    for i in range(1):
         target_date = (today - timedelta(days=i)).strftime("%Y-%m-%d")
-        input_csv = output_folder/ Path("csv")/ f"repo_insights_daily_{target_date}.csv"
+        input_csv = (
+            output_folder / Path("csv") / f"repo_insights_daily_{target_date}.csv"
+        )
 
         if input_csv.exists():
             print(f"  - Found data for {target_date}")
             files_processed += 1
-            aggregated_data += f"\n### Trending Repos on {target_date} ###\n"
-            
+            aggregated_data += f"\n\n"
             try:
-                with open(input_csv, mode='r', encoding='utf-8') as f:
+                with open(input_csv, mode="r", encoding="utf-8") as f:
                     reader = csv.DictReader(f)
                     for row in reader:
-                        aggregated_data += f"- Repo: {row['repo_name']}\n"
-                        aggregated_data += f"  Topics: {row['key_topics']}\n"
-                        aggregated_data += f"  Goal: {row['key_goals']}\n"
-                        aggregated_data += f"  Use Cases: {row['key_use_cases']}\n\n"
+                        aggregated_data += "<repo>\n"
+                        aggregated_data += f"  <name>{row['repo_name']}</name>\n"
+                        aggregated_data += f"  <topics>{row['key_topics']}</topics>\n"
+                        aggregated_data += f"  <goal>{row['key_goals']}</goal>\n"
+                        aggregated_data += (
+                            f"  <use_cases>{row['key_use_cases']}</use_cases>\n"
+                        )
+                        aggregated_data += "</repo>\n"
             except Exception as e:
                 print(f"Error reading {input_csv}: {e}")
         else:
             print(f"  - No data found for {target_date} (Skipping)")
+    aggregated_data += "</repositories>"
 
-    if files_processed == 0 or not aggregated_data.strip():
-        print("\nNo CSV files found for the past 7 days. Please run the analyze_readmes.py script first.")
+    if (
+        files_processed == 0
+        or aggregated_data.strip() == "<repositories>\n</repositories>"
+    ):
+        print(
+            "\nNo CSV files found for the past day. Please run the analyze_readmes.py script first."
+        )
         return
 
-    # 2. Feed to Ollama for the final synthesis
-    print(f"\n🤖 Synthesizing {files_processed} days of trends with Ollama... (This might take a moment depending on data size)")
-    summary = generate_executive_summary(aggregated_data)
+    print(
+        f"\n🤖 Synthesizing {files_processed} days of trends with Ollama... (This might take a moment depending on data size)"
+    )
+    
+    # 1. Generate the core summary
+    print("\nGenerating main trends...")
+    summary = generate_executive_summary(aggregated_data, "qwen3:8b")
+    
+    # 2. Generate the Deep Dive
+    print("Formulating Deep Dive recommendation...")
+    deep_dive = generate_deep_dive_recommendation(aggregated_data, "qwen3:8b")
 
-    # 3. Save the final digest
+    # 3. Generate the Fun Pick
+    print("Finding the Fun Pick...")
+    fun_pick = generate_fun_pick(aggregated_data, "qwen3:8b")
+
+    summary = generate_executive_summary(aggregated_data, "qwen3:8b")
+    
     if summary:
+        # Save everything to the local Markdown file as one cohesive document
+        full_digest_content = f"{summary}\n\n---\n\n{deep_dive}\n\n---\n\n{fun_pick}"
         with open(output_md, mode='w', encoding='utf-8') as f:
             f.write(f"# Weekly GitHub Trending Digest - Ending {today_str}\n\n")
-            f.write(summary)
-        print(f"✅ Success! Your weekly digest has been saved to {output_md}")
+            f.write(full_digest_content)
+        print(f"\n✅ Success! Your weekly digest has been saved locally to {output_md}")
         
-        # print("\n--- BEGIN DIGEST ---\n")
-        # print(summary)
+        # --- SEND TO DISCORD IN THREE SEPARATE MESSAGES ---
         
-        # print("\n--- END DIGEST ---")
+        # Message 1: Main Trends
+        msg1 = f"**📊 Past 7 day GitHub Trending Digest ({today_str})**\n\n{summary}"
+        send_to_discord(DISCORD_WEBHOOK_URL, msg1)
+        time.sleep(1.5) # Pause to prevent Discord Rate Limiting
         
-        discord_message = f"**📊 Past 7 day GitHub Trending Digest ({today_str})**\n\n{summary}"
-        
-        # Send to Discord
-        send_to_discord(DISCORD_WEBHOOK_URL, discord_message)
+        # Message 2: Deep Dive (Only send if it successfully generated)
+        if deep_dive:
+            send_to_discord(DISCORD_WEBHOOK_URL, deep_dive)
+            time.sleep(1.5)
+            
+        # Message 3: Fun Pick (Only send if it successfully generated)
+        if fun_pick:
+            send_to_discord(DISCORD_WEBHOOK_URL, fun_pick)
+            
     else:
-        print("Failed to generate the summary.")
+        print("\n❌ Failed to generate the main summary. Halting execution.")
 
 if __name__ == "__main__":
     main()

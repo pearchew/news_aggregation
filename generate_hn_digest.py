@@ -1,12 +1,13 @@
 import csv
 import json
 import requests
+import re
 from datetime import datetime
 from pathlib import Path
 import ollama
 
 # --- CONFIGURATION ---
-MODEL_NAME = "gemma4:e4b"
+MODEL_NAME = "qwen3:8b"
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf" # Replace with your Discord Webhook
 TODAY_STR = datetime.now().strftime("%Y-%m-%d")
 
@@ -36,18 +37,20 @@ def load_hn_data(file_path: Path):
 def analyze_trends(stories_text: str):
     """Calls Ollama to extract trends."""
     
+    # Updated prompt to enforce brevity and prevent hallucinated formatting
     system_prompt = (
         "You are an expert tech analyst and Hacker News historian. "
         "Your job is to analyze a list of today's top Hacker News stories (Top, Ask HN, Show HN) "
         "and extract the overarching themes, tools, and developer sentiment. "
+        "Keep your descriptions concise to fit within strict character limits. "
         "Output your response strictly in the following format:\n\n"
-        "- [Trend 1]: [Brief description]\n"
-        "- [Trend 2]: [Brief description]\n"
-        "- [Trend 3]: [Brief description]\n"
-        "- [Trend 4]: [Brief description]\n"
-        "- [Trend 5]: [Brief description]\n\n"
+        "- **[Trend 1]**: [1-2 short sentences describing the trend]\n"
+        "- **[Trend 2]**: [1-2 short sentences describing the trend]\n"
+        "- **[Trend 3]**: [1-2 short sentences describing the trend]\n"
+        "- **[Trend 4]**: [1-2 short sentences describing the trend]\n"
+        "- **[Trend 5]**: [1-2 short sentences describing the trend]\n\n"
         "**Rising Technologies/Keywords**:\n"
-        "[Comma separated list of specific tech, e.g., Rust, TPUs, Local LLMs]\n\n"
+        "[Comma separated list of specific tech, e.g., Rust, TPUs, Local LLMs]\n"
     )
 
     user_prompt = f"Here are the top Hacker News stories for {TODAY_STR}:\n\n{stories_text}\n\nWhat are today's trends?"
@@ -58,9 +61,16 @@ def analyze_trends(stories_text: str):
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
-        ]
+        ],
+        options={'temperature': 0.0} # Lower temperature for strict formatting
     )
-    return response['message']['content']
+    
+    raw_content = response['message']['content']
+    
+    # Strip out any <think> blocks the model might generate
+    clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+    
+    return clean_content
 
 def save_insights(analysis_text: str):
     """Saves the insight to a Markdown file and a JSON Lines file for long-term tracking."""
@@ -100,17 +110,28 @@ def send_to_discord(analysis_text: str):
         print("Skipping Discord notification (no webhook URL provided).")
         return
 
+    # Combine the header and the analysis
+    full_message = f"## 📈 Hacker News Daily Pulse: {TODAY_STR}\n\n{analysis_text}"
+
+    # CRITICAL FIX: Truncate to Discord's 2000 character limit
+    if len(full_message) > 2000:
+        print("Warning: Digest exceeds 2000 characters. Truncating for Discord limit...")
+        full_message = full_message[:1993] + "..."
+
     payload = {
         "username": "HN Trend Bot",
         "avatar_url": "https://news.ycombinator.com/y18.svg",
-        "content": f"## 📈 Hacker News Daily Pulse: {TODAY_STR}\n\n{analysis_text}"
+        "content": full_message
     }
 
-    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    if response.status_code in [200, 204]:
-        print("Successfully posted to Discord!")
-    else:
-        print(f"Failed to post to Discord. Status code: {response.status_code}")
+    try:
+        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
+        response.raise_for_status()
+        print("✅ Successfully posted to Discord!")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Failed to post to Discord: {e}")
+        if response is not None:
+            print(f"Response content: {response.text}")
 
 def main():
     try:
