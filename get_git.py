@@ -95,6 +95,6 @@ def fetch_and_save_repos():
 
 
 if __name__ == "__main__":
-    demonstrate_utilities()
-    demonstrate_fetch_developers()
+    # demonstrate_utilities()
+    # demonstrate_fetch_developers()
     fetch_and_save_repos()
