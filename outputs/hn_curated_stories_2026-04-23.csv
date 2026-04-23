@@ -1,28 +1,28 @@
 category,id,title,by,score,time,url
-Ask HN,47857461,Tell HN: I'm sick of AI everything,jonthepirate,325,1776820770,https://news.ycombinator.com/item?id=47857461
+Ask HN,47857461,Tell HN: I'm sick of AI everything,jonthepirate,327,1776820770,https://news.ycombinator.com/item?id=47857461
 Ask HN,47822940,Ask HN: How did you land your first projects as a solo engineer/consultant?,modelcroissant,299,1776590232,https://news.ycombinator.com/item?id=47822940
 Ask HN,47834213,Ask HN: How to solve the cold start problem for a two-sided marketplace?,alegd,144,1776692557,https://news.ycombinator.com/item?id=47834213
-Ask HN,47824738,Recommended GPU Repairshop in Europe (Germany),DogRunner,37,1776610238,https://news.ycombinator.com/item?id=47824738
+Ask HN,47824738,Recommended GPU Repairshop in Europe (Germany),DogRunner,38,1776610238,https://news.ycombinator.com/item?id=47824738
 Ask HN,47845050,Ask HN: What skills are future proof in an AI driven job market?,sunny678,31,1776750584,https://news.ycombinator.com/item?id=47845050
-Ask HN,47853021,Anthropic bans orgs without warning,alpinisme,29,1776798151,https://news.ycombinator.com/item?id=47853021
-Ask HN,47868229,"Hey, it's Earth Day today",burnt-resistor,14,1776886551,https://news.ycombinator.com/item?id=47868229
+Ask HN,47853021,Anthropic bans orgs without warning,alpinisme,31,1776798151,https://news.ycombinator.com/item?id=47853021
+Ask HN,47868229,"Hey, it's Earth Day today",burnt-resistor,17,1776886551,https://news.ycombinator.com/item?id=47868229
+Ask HN,47854549,Tell HN: My open-source project hit 5k registered users,darkhorse13,14,1776805833,https://news.ycombinator.com/item?id=47854549
 Ask HN,47825673,Opus 4.7 vs. 4.6 after 3 days of real coding side by side from my actual session,agentseal,14,1776617707,https://news.ycombinator.com/item?id=47825673
 Ask HN,47813874,Why don't we just ask AI to write assembler?,canterburry,14,1776496964,https://news.ycombinator.com/item?id=47813874
-Ask HN,47854549,Tell HN: My open-source project hit 5k registered users,darkhorse13,13,1776805833,https://news.ycombinator.com/item?id=47854549
 Ask HN,47858903,GPT 5.5 Released in Codex,zuzululu,12,1776831142,https://news.ycombinator.com/item?id=47858903
 Ask HN,47836356,Ask HN: Is GitHub's #1 repo fake? build-your-own-x 491K stars,throwawaysoso,11,1776701572,https://news.ycombinator.com/item?id=47836356
+Ask HN,47872660,Tell HN: YouTube RSS feeds no longer work,019,10,1776924102,https://news.ycombinator.com/item?id=47872660
 Ask HN,47858591,Ask HN: What Would Make Stack Overflow Great Again?,nnurmanov,10,1776828743,https://news.ycombinator.com/item?id=47858591
 Ask HN,47825001,Ask HN: What makes a good Product Manager,chairhairair,10,1776612445,https://news.ycombinator.com/item?id=47825001
-Ask HN,47818097,"Ask HN: Anyone know of that ""levels of AI programming"" blog post?",tuvix,10,1776535929,https://news.ycombinator.com/item?id=47818097
 Ask HN,47859207,OpenClaw stats don't add up,iliaov,9,1776833879,https://news.ycombinator.com/item?id=47859207
 Ask HN,47822787,"Ask HN: May be a basic question, but how can I use AI well?",jdw64,9,1776588157,https://news.ycombinator.com/item?id=47822787
 Ask HN,47842292,"Getting back into photography, ditching the phone camera in 2026?",eigenhombre,7,1776726635,https://news.ycombinator.com/item?id=47842292
 Ask HN,47834270,"Warning: If you search ""Claude Desktop"" on Google, the 2nd ad result is a scam",diogenescynic,7,1776692829,https://news.ycombinator.com/item?id=47834270
 Ask HN,47867083,Need advice: Back end engineer → infrastructure: how do you make the transition?,gokuljs,6,1776881041,https://news.ycombinator.com/item?id=47867083
 Show HN,47812341,Show HN: I made a calculator that works over disjoint sets of intervals,fouronnes3,313,1776474943,https://victorpoughon.github.io/interval-calculator/
-Show HN,47847558,"Show HN: VidStudio, a browser based video editor that doesn't upload your files",kolx,293,1776772696,https://vidstudio.app/video-editor
+Show HN,47847558,"Show HN: VidStudio, a browser based video editor that doesn't upload your files",kolx,294,1776772696,https://vidstudio.app/video-editor
 Show HN,47828896,Show HN: Run TRELLIS.2 Image-to-3D generation natively on Apple Silicon,shivampkumar,202,1776643636,https://github.com/shivampkumar/trellis-mac
-Show HN,47849097,Show HN: GoModel – an open-source AI gateway in Go,santiago-pl,195,1776780713,https://github.com/ENTERPILOT/GOModel/
+Show HN,47849097,Show HN: GoModel – an open-source AI gateway in Go,santiago-pl,196,1776780713,https://github.com/ENTERPILOT/GOModel/
 Show HN,47823460,Show HN: Prompt-to-Excalidraw demo with Gemma 4 E2B in the browser (3.1GB),teamchong,160,1776597447,https://teamchong.github.io/turboquant-wasm/draw.html
 Show HN,47835411,Show HN: Mediator.ai – Using Nash bargaining and LLMs to systematize fairness,sanity,157,1776697624,https://mediator.ai/
 Show HN,47816629,"Show HN: MDV – a Markdown superset for docs, dashboards, and slides with data",drasim,151,1776525879,https://github.com/drasimwagan/mdv
@@ -30,42 +30,42 @@ Show HN,47826104,Show HN: Faceoff – A terminal UI for following NHL games,vcf,
 Show HN,47835599,Show HN: Alien – Self-hosting with remote management (written in Rust),alongub,106,1776698337,https://news.ycombinator.com/item?id=47835599
 Show HN,47836740,Show HN: Ctx – a /resume that works across Claude Code and Codex,dchu17,71,1776702905,https://github.com/dchu917/ctx
 Show HN,47850907,Show HN: Daemons – we pivoted from building agents to cleaning up after them,rileyt,65,1776788201,https://charlielabs.ai/
+Show HN,47865642,"Show HN: Broccoli, one shot coding agent on the cloud",yzhong94,58,1776874196,https://github.com/besimple-oss/broccoli
 Show HN,47828968,Show HN: A lightweight way to make agents talk without paying for API usage,juanpabloaj,57,1776644484,https://juanpabloaj.com/2026/04/16/a-lightweight-way-to-make-agents-talk-without-paying-for-api-usage/
-Show HN,47865642,"Show HN: Broccoli, one shot coding agent on the cloud",yzhong94,55,1776874196,https://github.com/besimple-oss/broccoli
 Show HN,47840851,"Show HN: Holos – QEMU/KVM with a compose-style YAML, GPUs and health checks",zeroecco,55,1776719629,https://github.com/zeroecco/holos
 Show HN,47812964,Show HN: Sfsym – Export Apple SF Symbols as Vector SVG/PDF/PNG,olliewagner,29,1776483894,https://github.com/yapstudios/sfsym
 Show HN,47822301,Show HN: Backlit Keyboard API for Python,itsmeadarsh,27,1776581520,https://github.com/itsmeadarsh2008/backlit-kbd
 Show HN,47845865,Show HN: WeTransfer Alternative for Developers,mariusbolik,24,1776758310,https://dlvr.sh/
-Show HN,47868032,Show HN: Ghost Pepper Meet local meeting transcription and diarization,MattHart88,21,1776885598,https://matthartman.github.io/ghost-pepper/
+Show HN,47868032,Show HN: Ghost Pepper Meet local meeting transcription and diarization,MattHart88,22,1776885598,https://matthartman.github.io/ghost-pepper/
 Show HN,47827621,Show HN: Newsmaps.io a map of how news topics are covered by different countries,mkoh,19,1776632525,https://www.newsmaps.io/
 Show HN,47838708,Show HN: Git Push No-Mistakes,akane8,17,1776710421,https://github.com/kunchenguid/no-mistakes
-Top Story,47865868,Alberta startup sells no-tech tractors for half price,Kaibeezy,1544,1776875365,https://wheelfront.com/this-alberta-startup-sells-no-tech-tractors-for-half-price/
-Top Story,47868867,Apple fixes bug that cops used to extract deleted chat messages from iPhones,cdrnsf,492,1776889651,https://techcrunch.com/2026/04/22/apple-fixes-bug-that-cops-used-to-extract-deleted-chat-messages-from-iphones/
-Top Story,47835366,How does Shazam work?,datadrivenangel,102,1776697444,https://perthirtysix.com/how-the-heck-does-shazam-work
-Top Story,47872324,I am building a cloud,bumbledraven,20,1776919459,https://crawshaw.io/blog/building-a-cloud
-Top Story,47866697,We found a stable Firefox identifier linking all your private Tor identities,danpinto,554,1776879303,https://fingerprint.com/blog/firefox-tor-indexeddb-privacy-vulnerability/
-Top Story,47871817,Borrow-checking without type-checking,jamii,28,1776912917,https://www.scattered-thoughts.net/writing/borrow-checking-without-type-checking/
-Top Story,47863217,Qwen3.6-27B: Flagship-Level Coding in a 27B Dense Model,mfiguiere,772,1776863998,https://qwen.ai/blog?id=qwen3.6-27b
-Top Story,47846718,A True Life Hack: What Physical 'Life Force' Turns Biology's Wheels?,Prof_Sigmund,21,1776765349,https://www.quantamagazine.org/what-physical-life-force-turns-biologys-wheels-20260420/
-Top Story,47824943,5x5 Pixel font for tiny screens,zdw,498,1776611968,https://maurycyz.com/projects/mcufont/
-Top Story,47872200,A Boy That Cried Mythos: Verification Is Collapsing Trust in Anthropic,taejavu,23,1776917834,https://www.flyingpenguin.com/the-boy-that-cried-mythos-verification-is-collapsing-trust-in-anthropic/
-Top Story,47871195,Tempest vs. Tempest: The Making and Remaking of Atari's Iconic Video Game,mwenge,44,1776906152,https://tempest.homemade.systems
-Top Story,47866913,Over-editing refers to a model modifying code beyond what is necessary,pella,331,1776880277,https://nrehiew.github.io/blog/minimal_editing/
-Top Story,47843434,The Onion to Take over InfoWars,lxm,21,1776734603,https://www.nytimes.com/2026/04/20/business/infowars-alex-jones-the-onion.html
-Top Story,47871800,Flow Map Learning via Nongradient Vector Flow [pdf],E-Reverance,14,1776912720,https://openreview.net/pdf?id=C1bkDPqvDW
-Top Story,47871077,OpenAI's response to the Axios developer tool compromise,shpat,52,1776905101,https://openai.com/index/axios-developer-tool-compromise/
-Top Story,47867048,Website streamed live directly from a model,sethbannon,214,1776880878,https://flipbook.page/
-Top Story,47865661,"Technical, cognitive, and intent debt",theorchid,235,1776874283,https://martinfowler.com/fragments/2026-04-02.html
-Top Story,47840252,Verus is a tool for verifying the correctness of code written in Rust,fanf2,35,1776717725,https://verus-lang.github.io/verus/guide/
-Top Story,47864785,Ping-pong robot beats top-level human players,wslh,99,1776870828,https://www.reuters.com/sports/ping-pong-robot-ace-makes-history-by-beating-top-level-human-players-2026-04-22/
-Top Story,47870108,Bring your own Agent to MS Teams,umangsehgal93,40,1776896728,https://microsoft.github.io/teams-sdk/blog/bring-your-agent-to-teams/
-Top Story,47866750,Parallel agents in Zed,ajeetdsouza,197,1776879537,https://zed.dev/blog/parallel-agents
-Top Story,47864393,Scoring Show HN submissions for AI design patterns,hubraumhugo,294,1776869072,https://www.adriankrebs.ch/blog/design-slop/
-Top Story,47854365,Another Day Has Come,ndr42,222,1776804739,https://daringfireball.net/2026/04/another_day_has_come
-Top Story,47864011,The handmade beauty of Machine Age data visualizations,benbreen,20,1776867344,https://resobscura.substack.com/p/the-handmade-beauty-of-machine-age
-Top Story,47863324,Ultraviolet corona discharges on treetops during storms,t-3,215,1776864520,https://www.psu.edu/news/earth-and-mineral-sciences/story/treetops-glowing-during-storms-captured-film-first-time
-Top Story,47870709,Approximating Hyperbolic Tangent,jtomschroeder,37,1776901598,https://jtomschroeder.com/blog/approximating-tanh/
-Top Story,47840618,What killed the Florida orange?,danso,139,1776718843,https://slate.com/business/2026/04/florida-state-orange-food-houses-real-estate.html
-Top Story,47812649,Bodega cats of New York,zdw,179,1776479217,https://bodegacatsofnewyork.com
-Top Story,47836035,Effectful Recursion Schemes,marvinborner,23,1776700099,https://effekt-lang.org/blog/recursion-schemes/
-Top Story,47869496,The Neon King of New Orleans,renameme,46,1776893198,https://gardenandgun.com/new-orleans-neon-king
+Top Story,47872324,I am building a cloud,bumbledraven,222,1776919459,https://crawshaw.io/blog/building-a-cloud
+Top Story,47865868,Alberta startup sells no-tech tractors for half price,Kaibeezy,1681,1776875365,https://wheelfront.com/this-alberta-startup-sells-no-tech-tractors-for-half-price/
+Top Story,47868867,Apple fixes bug that cops used to extract deleted chat messages from iPhones,cdrnsf,548,1776889651,https://techcrunch.com/2026/04/22/apple-fixes-bug-that-cops-used-to-extract-deleted-chat-messages-from-iphones/
+Top Story,47866697,We found a stable Firefox identifier linking all your private Tor identities,danpinto,649,1776879303,https://fingerprint.com/blog/firefox-tor-indexeddb-privacy-vulnerability/
+Top Story,47872452,Ars Technica: Our newsroom AI policy,zdw,31,1776921245,https://arstechnica.com/staff/2026/04/our-newsroom-ai-policy/
+Top Story,47843434,The Onion to Take over InfoWars,lxm,105,1776734603,https://www.nytimes.com/2026/04/20/business/infowars-alex-jones-the-onion.html
+Top Story,47824943,5x5 Pixel font for tiny screens,zdw,563,1776611968,https://maurycyz.com/projects/mcufont/
+Top Story,47846718,A True Life Hack: What Physical 'Life Force' Turns Biology's Wheels?,Prof_Sigmund,56,1776765349,https://www.quantamagazine.org/what-physical-life-force-turns-biologys-wheels-20260420/
+Top Story,47866913,Over-editing refers to a model modifying code beyond what is necessary,pella,351,1776880277,https://nrehiew.github.io/blog/minimal_editing/
+Top Story,47871195,Tempest vs. Tempest: The Making and Remaking of Atari's Iconic Video Game,mwenge,64,1776906152,https://tempest.homemade.systems
+Top Story,47871817,Borrow-checking without type-checking,jamii,50,1776912917,https://www.scattered-thoughts.net/writing/borrow-checking-without-type-checking/
+Top Story,47867048,Website streamed live directly from a model,sethbannon,250,1776880878,https://flipbook.page/
+Top Story,47871077,OpenAI's response to the Axios developer tool compromise,shpat,65,1776905101,https://openai.com/index/axios-developer-tool-compromise/
+Top Story,47871800,Flow Map Learning via Nongradient Vector Flow [pdf],E-Reverance,23,1776912720,https://openreview.net/pdf?id=C1bkDPqvDW
+Top Story,47865661,"Technical, cognitive, and intent debt",theorchid,255,1776874283,https://martinfowler.com/fragments/2026-04-02.html
+Top Story,47823655,Plexus P/20 Emulator,hggh,13,1776599612,https://spritetm.github.io/plexus_20_emu/
+Top Story,47847153,An amateur historian's favorite books about the Silk Road,bwb,6,1776769297,https://bookdna.com/best-books/silk-road
+Top Story,47864785,Ping-pong robot beats top-level human players,wslh,114,1776870828,https://www.reuters.com/sports/ping-pong-robot-ace-makes-history-by-beating-top-level-human-players-2026-04-22/
+Top Story,47840252,Verus is a tool for verifying the correctness of code written in Rust,fanf2,48,1776717725,https://verus-lang.github.io/verus/guide/
+Top Story,47866750,Parallel agents in Zed,ajeetdsouza,217,1776879537,https://zed.dev/blog/parallel-agents
+Top Story,47863217,Qwen3.6-27B: Flagship-Level Coding in a 27B Dense Model,mfiguiere,818,1776863998,https://qwen.ai/blog?id=qwen3.6-27b
+Top Story,47864393,Scoring Show HN submissions for AI design patterns,hubraumhugo,304,1776869072,https://www.adriankrebs.ch/blog/design-slop/
+Top Story,47863324,Ultraviolet corona discharges on treetops during storms,t-3,228,1776864520,https://www.psu.edu/news/earth-and-mineral-sciences/story/treetops-glowing-during-storms-captured-film-first-time
+Top Story,47870108,Bring your own Agent to MS Teams,umangsehgal93,56,1776896728,https://microsoft.github.io/teams-sdk/blog/bring-your-agent-to-teams/
+Top Story,47812649,Bodega cats of New York,zdw,189,1776479217,https://bodegacatsofnewyork.com
+Top Story,47866860,Workspace Agents in ChatGPT,mfiguiere,132,1776880027,https://openai.com/index/introducing-workspace-agents-in-chatgpt/
+Top Story,47864011,The handmade beauty of Machine Age data visualizations,benbreen,33,1776867344,https://resobscura.substack.com/p/the-handmade-beauty-of-machine-age
+Top Story,47871519,Arch Linux Now Has a Bit-for-Bit Reproducible Docker Image,maxloh,25,1776909548,https://antiz.fr/blog/archlinux-now-has-a-reproducible-docker-image/
+Top Story,47861270,Windows 9x Subsystem for Linux,sohkamyung,941,1776851572,https://social.hails.org/@hailey/116446826733136456
+Top Story,47840618,What killed the Florida orange?,danso,149,1776718843,https://slate.com/business/2026/04/florida-state-orange-food-houses-real-estate.html
