@@ -3,39 +3,11 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import ollama
 import re
-import requests
 import time
+from utils import send_to_discord
+import logging
 
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
-
-
-def send_to_discord(webhook_url, content):
-    """
-    Sends the generated summary to a Discord channel via webhook.
-    """
-    print("\nSending summary to Discord...")
-
-    # Discord has a 2000 character limit for the 'content' field.
-    # If the summary is too long, we truncate it to avoid a 400 Bad Request error.
-    if len(content) > 2000:
-        print(
-            "Warning: Digest exceeds 2000 characters. Truncating for Discord limit..."
-        )
-        content = content[:1993] + "..."
-
-    payload = {
-        "content": content,
-        "username": "Trending Repo Digest",  # You can customize the bot's name here
-        "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",  # Optional GitHub logo
-    }
-
-    try:
-        response = requests.post(webhook_url, json=payload)
-        response.raise_for_status()
-        print("✅ Successfully posted to Discord!")
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Failed to send to Discord: {e}")
-
+logger = logging.getLogger(__name__)
 
 def generate_executive_summary(repo_data_string, model_name="gemma4:e4b"):
     """
@@ -83,7 +55,7 @@ Begin the bullet points now:"""
         clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
         return clean_content
     except Exception as e:
-        print(f"Ollama Error: {e}")
+        logger.error(f"Ollama Error: {e}")
         return None
 
 def generate_fun_pick(repo_data_string, model_name="qwen3:8b"):
@@ -119,7 +91,7 @@ You MUST follow a two-step process:
         return clean_content
         
     except Exception as e:
-        print(f"Ollama Error in fun pick: {e}")
+        logger.error(f"Ollama Error in fun pick: {e}")
         return ""
 
 def generate_deep_dive_recommendation(repo_data_string, model_name="qwen3:8b"):
@@ -155,7 +127,7 @@ You MUST follow a two-step process:
         return clean_content
         
     except Exception as e:
-        print(f"Ollama Error in deep dive: {e}")
+        logger.error(f"Ollama Error in deep dive: {e}")
         return ""
 
 def main():
@@ -165,7 +137,7 @@ def main():
     output_folder.mkdir(parents=True, exist_ok=True)
     output_md = output_folder / f"past_day_digest_{today_str}.md"
 
-    print("Gathering insights from the past day...")
+    logger.info("Gathering insights from the past day...")
     aggregated_data = "<repositories>\n"
     files_processed = 0
     for i in range(1):
@@ -175,7 +147,7 @@ def main():
         )
 
         if input_csv.exists():
-            print(f"  - Found data for {target_date}")
+            logger.info(f"  - Found data for {target_date}")
             files_processed += 1
             aggregated_data += f"\n\n"
             try:
@@ -191,64 +163,49 @@ def main():
                         )
                         aggregated_data += "</repo>\n"
             except Exception as e:
-                print(f"Error reading {input_csv}: {e}")
+                logger.error(f"Error reading {input_csv}: {e}")
         else:
-            print(f"  - No data found for {target_date} (Skipping)")
+            logger.info(f"  - No data found for {target_date} (Skipping)")
     aggregated_data += "</repositories>"
 
     if (
         files_processed == 0
         or aggregated_data.strip() == "<repositories>\n</repositories>"
     ):
-        print(
+        logger.info(
             "\nNo CSV files found for the past day. Please run the analyze_readmes.py script first."
         )
         return
 
-    print(
+    logger.info(
         f"\n🤖 Synthesizing {files_processed} days of trends with Ollama... (This might take a moment depending on data size)"
     )
     
-    # 1. Generate the core summary
-    print("\nGenerating main trends...")
+    logger.info("\nGenerating main trends...")
     summary = generate_executive_summary(aggregated_data, "qwen3:8b")
-    
-    # 2. Generate the Deep Dive
-    print("Formulating Deep Dive recommendation...")
+    logger.info("Formulating Deep Dive recommendation...")
     deep_dive = generate_deep_dive_recommendation(aggregated_data, "qwen3:8b")
-
-    # 3. Generate the Fun Pick
-    print("Finding the Fun Pick...")
+    logger.info("Finding the Fun Pick...")
     fun_pick = generate_fun_pick(aggregated_data, "qwen3:8b")
-
     summary = generate_executive_summary(aggregated_data, "qwen3:8b")
     
     if summary:
         # Save everything to the local Markdown file as one cohesive document
         full_digest_content = f"{summary}\n\n---\n\n{deep_dive}\n\n---\n\n{fun_pick}"
         with open(output_md, mode='w', encoding='utf-8') as f:
-            f.write(f"# Weekly GitHub Trending Digest - Ending {today_str}\n\n")
+            f.write(f"# Daily GitHub Trending Digest - {today_str}\n\n")
             f.write(full_digest_content)
-        print(f"\n✅ Success! Your weekly digest has been saved locally to {output_md}")
-        
-        # --- SEND TO DISCORD IN THREE SEPARATE MESSAGES ---
-        
-        # Message 1: Main Trends
-        msg1 = f"**📊 Past 7 day GitHub Trending Digest ({today_str})**\n\n{summary}"
-        send_to_discord(DISCORD_WEBHOOK_URL, msg1)
-        time.sleep(1.5) # Pause to prevent Discord Rate Limiting
-        
-        # Message 2: Deep Dive (Only send if it successfully generated)
-        if deep_dive:
-            send_to_discord(DISCORD_WEBHOOK_URL, deep_dive)
-            time.sleep(1.5)
-            
-        # Message 3: Fun Pick (Only send if it successfully generated)
-        if fun_pick:
-            send_to_discord(DISCORD_WEBHOOK_URL, fun_pick)
-            
+        logger.info(f"\n✅ Success! Your daily digest has been saved locally to {output_md}")
+        msg1 = f"**📊 {today_str} GitHub Trending Digest**\n\n{summary}"
+        DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
+        github_avatar = "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+        send_to_discord(DISCORD_WEBHOOK_URL, msg1, username="Trending Repo Digest", avatar_url=github_avatar)
+        time.sleep(1.5)
+        send_to_discord(DISCORD_WEBHOOK_URL, deep_dive, username="Trending Repo Digest", avatar_url=github_avatar)
+        time.sleep(1.5)
+        send_to_discord(DISCORD_WEBHOOK_URL, fun_pick, username="Trending Repo Digest", avatar_url=github_avatar)
     else:
-        print("\n❌ Failed to generate the main summary. Halting execution.")
+        logger.error("\n❌ Failed to generate the main summary. Halting execution.")
 
 if __name__ == "__main__":
     main()

@@ -2,13 +2,14 @@ import requests
 from pathlib import Path
 import pandas as pd
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 def save_github_readme(owner, repo, filename="README.md", output_folder="outputs"):
     """
     Fetches the raw README.md from a GitHub repository and saves it locally.
     """
-    # 1. Define the API endpoint
-    # The format is: https://api.github.com/repos/{owner}/{repo}/contents/{path}
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{filename}"
     
     # 2. Set headers
@@ -20,7 +21,7 @@ def save_github_readme(owner, repo, filename="README.md", output_folder="outputs
     }
 
     try:
-        print(f"Fetching {filename} from {owner}/{repo}...")
+        logger.info(f"Fetching {filename} from {owner}/{repo}...")
         response = requests.get(url, headers=headers)
         
         # Check if the request was successful
@@ -33,13 +34,13 @@ def save_github_readme(owner, repo, filename="README.md", output_folder="outputs
             
             # 4. Save the content
             file_to_save.write_text(response.text, encoding='utf-8')
-            print(f"Successfully saved to: {file_to_save}")
+            logger.info(f"Successfully saved to: {file_to_save}")
         else:
-            print(f"Error: Received status code {response.status_code}")
-            print(f"Message: {response.json().get('message')}")
+            logger.error(f"Error: Received status code {response.status_code}")
+            logger.error(f"Message: {response.json().get('message')}")
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
 
 def parse_github_url(url):
     """
@@ -65,9 +66,9 @@ def main():
     df_dev = pd.read_csv(file_path_dev)[['username', 'repo_name', 'repo_url']]
     df_repo[['owner', 'repo_name']] = df_repo['url'].apply(lambda x: pd.Series(parse_github_url(x)))
 
-    print("Extracted Owner and Repo names:")
-    print(df_repo[['url', 'owner', 'repo_name']].head())
-    print(df_dev[['repo_url', 'username', 'repo_name']].head())
+    logger.info("Extracted Owner and Repo names:")
+    logger.info(df_repo[['url', 'owner', 'repo_name']].head())
+    logger.info(df_dev[['repo_url', 'username', 'repo_name']].head())
 
     for owner, repo_name in zip(df_repo['owner'], df_repo['repo_name']):
         save_github_readme(owner, repo_name)

@@ -4,6 +4,9 @@ import csv
 from pathlib import Path
 from datetime import datetime
 import ollama
+import logging
+
+logger = logging.getLogger(__name__)
 
 def extract_readme_insights(readme_content, model_name="gemma4:e4b"):
     """
@@ -37,10 +40,10 @@ def extract_readme_insights(readme_content, model_name="gemma4:e4b"):
         # Parse the JSON string returned by the model
         return json.loads(response['message']['content'])
     except json.JSONDecodeError:
-        print("Failed to decode JSON from model response.")
+        logger.error("Failed to decode JSON from model response.")
         return None
     except Exception as e:
-        print(f"Ollama Error: {e}")
+        logger.error(f"Ollama Error: {e}")
         return None
 
 def main():
@@ -50,7 +53,7 @@ def main():
     output_csv = output_folder / Path("gh_insights") / Path("csv") / f"repo_insights_daily_{today}.csv"
 
     if not readme_folder.exists():
-        print(f"Could not find the folder {readme_folder}. Have you run get_git_readme.py today?")
+        logger.warning(f"Could not find the folder {readme_folder}. Have you run get_git_readme.py today?")
         return
 
     extracted_data = []
@@ -60,7 +63,7 @@ def main():
         # Extract the repo name from the filename
         # Format is typically README_reponame_YYYY-MM-DD.md
         repo_name = readme_path.name.replace("README_", "").replace(f"_{today}.md", "")
-        print(f"🤖 Analyzing {repo_name}...")
+        logger.info(f"🤖 Analyzing {repo_name}...")
         
         content = readme_path.read_text(encoding='utf-8', errors='ignore')
         
@@ -80,7 +83,7 @@ def main():
 
     # Save results to a CSV file
     if extracted_data:
-        print(f"\nWriting {len(extracted_data)} insights to {output_csv}...")
+        logger.info(f"\nWriting {len(extracted_data)} insights to {output_csv}...")
         fieldnames = ["repo_name", "key_topics", "key_goals", "key_use_cases"]
         
         with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
@@ -88,9 +91,9 @@ def main():
             writer.writeheader()
             writer.writerows(extracted_data)
         
-        print("✅ Pipeline complete! Your daily digest data is ready.")
+        logger.info("✅ Pipeline complete! Your daily digest data is ready.")
     else:
-        print("No insights were extracted. Check your Ollama installation and logs.")
+        logger.warning("No insights were extracted. Check your Ollama installation and logs.")
 
 if __name__ == "__main__":
     main()

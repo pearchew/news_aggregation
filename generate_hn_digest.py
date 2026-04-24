@@ -5,13 +5,13 @@ import re
 from datetime import datetime
 from pathlib import Path
 import ollama
+from utils import send_to_discord
+import logging
 
-# --- CONFIGURATION ---
+logger = logging.getLogger(__name__)
+
 MODEL_NAME = "qwen3:8b"
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf" # Replace with your Discord Webhook
 TODAY_STR = datetime.now().strftime("%Y-%m-%d")
-
-# Paths setup using pathlib
 BASE_DIR = Path("outputs")
 DATA_FILE = BASE_DIR / f"hn_curated_stories_{TODAY_STR}.csv" # Assuming scraper saves with date
 INSIGHTS_DIR = BASE_DIR / "hn_insights"
@@ -55,7 +55,7 @@ def analyze_trends(stories_text: str):
 
     user_prompt = f"Here are the top Hacker News stories for {TODAY_STR}:\n\n{stories_text}\n\nWhat are today's trends?"
 
-    print(f"Sending data to Ollama model '{MODEL_NAME}'...")
+    logger.info(f"Sending data to Ollama model '{MODEL_NAME}'...")
     response = ollama.chat(
         model=MODEL_NAME,
         messages=[
@@ -79,7 +79,7 @@ def save_insights(analysis_text: str):
     md_file = MD_DIR / f"hn_trends_{TODAY_STR}.md"
     md_content = f"# Hacker News Trends: {TODAY_STR}\n\n{analysis_text}"
     md_file.write_text(md_content, encoding="utf-8")
-    print(f"Saved markdown report to {md_file}")
+    logger.info(f"Saved markdown report to {md_file}")
 
     # 2. Extract Keywords (Quick and dirty parsing based on our prompt structure)
     keywords = []
@@ -90,7 +90,7 @@ def save_insights(analysis_text: str):
             keywords_line = parts[1].split("\n\n")[0]
             keywords = [k.strip() for k in keywords_line.split(",")]
     except Exception as e:
-        print("Could not parse keywords for JSON.")
+        logger.error("Could not parse keywords for JSON.")
 
     # 3. Save to JSONL for long-term programmatic tracking
     json_record = {
@@ -102,53 +102,27 @@ def save_insights(analysis_text: str):
     # Append to jsonl file
     with JSONL_FILE.open("a", encoding="utf-8") as f:
         f.write(json.dumps(json_record) + "\n")
-    print(f"Appended structured data to {JSONL_FILE}")
-
-def send_to_discord(analysis_text: str):
-    """Sends the formatted analysis to a Discord channel via Webhook."""
-    if DISCORD_WEBHOOK_URL == "YOUR_DISCORD_WEBHOOK_URL_HERE":
-        print("Skipping Discord notification (no webhook URL provided).")
-        return
-
-    # Combine the header and the analysis
-    full_message = f"## 📈 Hacker News Daily Pulse: {TODAY_STR}\n\n{analysis_text}"
-
-    # CRITICAL FIX: Truncate to Discord's 2000 character limit
-    if len(full_message) > 2000:
-        print("Warning: Digest exceeds 2000 characters. Truncating for Discord limit...")
-        full_message = full_message[:1993] + "..."
-
-    payload = {
-        "username": "HN Trend Bot",
-        "avatar_url": "https://news.ycombinator.com/y18.svg",
-        "content": full_message
-    }
-
-    try:
-        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-        response.raise_for_status()
-        print("✅ Successfully posted to Discord!")
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Failed to post to Discord: {e}")
-        if response is not None:
-            print(f"Response content: {response.text}")
+    logger.info(f"Appended structured data to {JSONL_FILE}")
 
 def main():
     try:
-        # Step 1: Load Data
         stories_text = load_hn_data(DATA_FILE)
-        
-        # Step 2: Analyze with Ollama
         analysis = analyze_trends(stories_text)
-        
-        # Step 3: Save insights locally
         save_insights(analysis)
         
-        # Step 4: Broadcast to Discord
-        send_to_discord(analysis)
+        hn_avatar = "https://news.ycombinator.com/y18.svg"
+        full_message = f"## 📈 Hacker News Daily Pulse: {TODAY_STR}\n\n{analysis}"
+        DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
         
+        send_to_discord(
+            webhook_url=DISCORD_WEBHOOK_URL, 
+            content=full_message, 
+            username="HN Trend Bot", 
+            avatar_url=hn_avatar
+        )
+        logger.info("Sent daily trends to Discord channel.")
     except Exception as e:
-        print(f"Pipeline failed: {e}")
+        logger.error(f"Pipeline failed: {e}")
 
 if __name__ == "__main__":
     # If testing with the uploaded file, uncomment the following line to override DATA_FILE:

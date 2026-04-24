@@ -3,6 +3,9 @@ import csv
 import concurrent.futures
 from pathlib import Path
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://hacker-news.firebaseio.com/v0"
 
@@ -19,20 +22,20 @@ def get_top_items_for_category(endpoint, category_name, limit=20, sort_by_score=
     """
     Fetches IDs from an endpoint, retrieves their details, and returns the top items.
     """
-    print(f"Fetching IDs for {category_name}...")
+    logger.info(f"Fetching IDs for {category_name}...")
     try:
         response = requests.get(f"{BASE_URL}/{endpoint}.json", timeout=10)
         response.raise_for_status()
         story_ids = response.json()
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching {category_name} IDs: {e}")
+        logger.error(f"Error fetching {category_name} IDs: {e}")
         return []
 
     # If we need to sort by score, fetch up to the latest 200 items (the max for Ask/Show endpoints).
     # If not (like Top Stories which are pre-ranked), just fetch the first `limit` items to save time.
     ids_to_fetch = story_ids[:200] if sort_by_score else story_ids[:limit]
     
-    print(f"Retrieving data for {len(ids_to_fetch)} items in {category_name}...")
+    logger.info(f"Retrieving data for {len(ids_to_fetch)} items in {category_name}...")
     
     valid_stories = []
     # Use ThreadPoolExecutor to fetch items in parallel (much faster!)
@@ -83,13 +86,12 @@ def scrape_hn_to_csv():
     all_stories.extend(top_stories)
 
     if not all_stories:
-        print("No stories were fetched. Exiting.")
+        logger.warning("No stories were fetched. Exiting.")
         return
 
     # 5. Write everything to CSV
     fieldnames = ["category", "id", "title", "by", "score", "time", "url"]
-    
-    print(f"\nWriting {len(all_stories)} total stories to {file_path.absolute()}...")
+    logger.info(f"\nWriting {len(all_stories)} total stories to {file_path.absolute()}...")
     
     try:
         with open(file_path, mode='w', newline='', encoding='utf-8') as csv_file:
@@ -97,9 +99,9 @@ def scrape_hn_to_csv():
             writer.writeheader()
             writer.writerows(all_stories)
             
-        print("Successfully exported data!")
+        logger.info("Successfully exported data!")
     except IOError as e:
-        print(f"Error writing to CSV: {e}")
+        logger.error(f"Error writing to CSV: {e}")
 
 if __name__ == "__main__":
     scrape_hn_to_csv()

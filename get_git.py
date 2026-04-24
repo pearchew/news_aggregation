@@ -2,19 +2,22 @@ import os
 import csv
 from datetime import datetime
 import gtrending
+import logging
+
+logger = logging.getLogger(__name__)
 
 def fetch_and_save_repos():
-    print("--- FETCHING REPOSITORIES & SAVING TO CSV ---")
+    logger.info("--- FETCHING REPOSITORIES & SAVING TO CSV ---")
     filter_since = "daily"
     
-    print(f"Fetching {filter_since} trending repositories...")
+    logger.info(f"Fetching {filter_since} trending repositories...")
     
     repos = gtrending.fetch_repos(
         since=filter_since
     )
     
     if not repos:
-        print("No repositories found for these filters.")
+        logger.warning("No repositories found for these filters.")
         return
 
     # Create the outputs directory if it doesn't exist
@@ -44,23 +47,23 @@ def fetch_and_save_repos():
                 
             writer.writerow(repo)
             
-    print(f"Successfully saved {len(repos)} repositories to '{filepath}'")
+    logger.info(f"Successfully saved {len(repos)} repositories to '{filepath}'")
 
 def fetch_and_save_developers():
-    print("--- FETCHING DEVELOPERS & SAVING TO CSV ---")
+    logger.info("--- FETCHING DEVELOPERS & SAVING TO CSV ---")
     
     # Set our filters
     # Note: Developer trending does not utilize spoken language filters
     filter_since = "daily"
     
-    print(f"Fetching {filter_since} trending developers...")
+    logger.info(f"Fetching {filter_since} trending developers...")
     
     devs = gtrending.fetch_developers(
         since=filter_since
     )
     
     if not devs:
-        print("No developers found for these filters.")
+        logger.warning("No developers found for these filters.")
         return
 
     # Create the outputs directory if it doesn't exist
@@ -106,8 +109,8 @@ def fetch_and_save_developers():
         for dev in flattened_devs:
             writer.writerow(dev)
             
-    print(f"Successfully saved {len(flattened_devs)} developers to '{filepath}'")
-    
+    logger.info(f"Successfully saved {len(flattened_devs)} developers to '{filepath}'")
+
 if __name__ == "__main__":
     fetch_and_save_repos()
     fetch_and_save_developers()
