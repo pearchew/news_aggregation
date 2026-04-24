@@ -5,6 +5,9 @@ from pathlib import Path
 from datetime import datetime
 import ollama
 import logging
+from database import SessionLocal
+from models import RepoInsight
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -83,17 +86,33 @@ def main():
 
     # Save results to a CSV file
     if extracted_data:
-        logger.info(f"\nWriting {len(extracted_data)} insights to {output_csv}...")
-        fieldnames = ["repo_name", "key_topics", "key_goals", "key_use_cases"]
+        db = SessionLocal()
+    today_date = date.today()
+    
+    for item in extracted_data:
+        new_insight = RepoInsight(
+            date_scraped=today_date,
+            repo_name=item["repo_name"],
+            key_topics=item["key_topics"],
+            key_goals=item["key_goals"],
+            key_use_cases=item["key_use_cases"]
+        )
+        db.add(new_insight)
+    
+    db.commit()
+    db.close()
+    logger.info("✅ Saved insights directly to the database!")
+    #     logger.info(f"\nWriting {len(extracted_data)} insights to {output_csv}...")
+    #     fieldnames = ["repo_name", "key_topics", "key_goals", "key_use_cases"]
         
-        with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(extracted_data)
+    #     with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
+    #         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+    #         writer.writeheader()
+    #         writer.writerows(extracted_data)
         
-        logger.info("✅ Pipeline complete! Your daily digest data is ready.")
-    else:
-        logger.warning("No insights were extracted. Check your Ollama installation and logs.")
+    #     logger.info("✅ Pipeline complete! Your daily digest data is ready.")
+    # else:
+    #     logger.warning("No insights were extracted. Check your Ollama installation and logs.")
 
 if __name__ == "__main__":
     main()
