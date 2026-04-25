@@ -5,8 +5,8 @@ import ollama
 import re
 import time
 import logging
-from database import SessionLocal
-from models import RepoInsight
+from database_setup.database import SessionLocal
+from database_setup.models import RepoInsight
 from utils import send_to_discord
 
 logger = logging.getLogger(__name__)

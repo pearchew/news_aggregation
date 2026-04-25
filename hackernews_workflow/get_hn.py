@@ -4,8 +4,8 @@ from datetime import date
 import logging
 
 # 1. Import your database tools
-from database import SessionLocal
-from models import hacker_news_daily
+from database_setup.database import SessionLocal
+from database_setup.models import hacker_news_daily
 
 logger = logging.getLogger(__name__)
 BASE_URL = "https://hacker-news.firebaseio.com/v0"

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, Date
-from database import Base
+from database_setup.database import Base
 
 class RepoInsight(Base):
     __tablename__ = "repo_insights"

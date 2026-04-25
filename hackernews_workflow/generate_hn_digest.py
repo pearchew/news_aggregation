@@ -7,8 +7,8 @@ from pathlib import Path
 import ollama
 from utils import send_to_discord
 import logging
-from database import SessionLocal
-from models import hacker_news_daily
+from database_setup.database import SessionLocal
+from database_setup.models import hacker_news_daily
 from utils import send_to_discord
 
 logger = logging.getLogger(__name__)

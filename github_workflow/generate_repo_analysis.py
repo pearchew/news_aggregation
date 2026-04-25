@@ -5,8 +5,8 @@ from pathlib import Path
 from datetime import datetime
 import ollama
 import logging
-from database import SessionLocal
-from models import RepoInsight
+from database_setup.database import SessionLocal
+from database_setup.models import RepoInsight
 from datetime import date
 
 logger = logging.getLogger(__name__)

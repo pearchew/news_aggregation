@@ -4,8 +4,8 @@ from datetime import date, datetime
 import logging
 
 # 1. Import your database connection and model
-from database import SessionLocal
-from models import repo_daily
+from database_setup.database import SessionLocal
+from database_setup.models import repo_daily
 
 logger = logging.getLogger(__name__)
 
