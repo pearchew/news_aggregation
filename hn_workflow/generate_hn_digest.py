@@ -1,17 +1,25 @@
+# 1. Standard Library Imports
 import csv
-import json
-import requests
-import re
-from datetime import date,datetime
-from pathlib import Path
-import ollama
-from utils import send_to_discord
 import logging
-from database_setup.database import SessionLocal
-from database_setup.models import hacker_news_daily
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+import json
+
+# 2. Third-Party Imports
+import ollama
+
+# 3. Modify Path for Local Imports
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+
+# 4. Local Imports
 from utils import send_to_discord
 
+# --- Script setup ---
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 MODEL_NAME = "qwen3:8b"
 TODAY_STR = datetime.now().strftime("%Y-%m-%d")
@@ -43,15 +51,16 @@ def analyze_trends(stories_text: str):
     # Updated prompt to enforce brevity and prevent hallucinated formatting
     system_prompt = (
         "You are an expert tech analyst and Hacker News historian. "
-        "Your job is to analyze a list of today's top Hacker News stories (Top, Ask HN, Show HN) and extract the overarching themes, tools, and developer sentiment. "
+        "Your job is to analyze a list of today's top Hacker News stories (Top, Ask HN, Show HN) "
+        "and extract the overarching themes, tools, and developer sentiment. "
+        "Keep your descriptions concise to fit within strict character limits of 2000 characters. "
         "Output your response strictly in the following format:\n\n"
-        "- **1.** [5 word headline]: [1-2 short sentences describing the trend]\n"
-        "- **2.** [5 word headline]: [1-2 short sentences describing the trend]\n"
-        "- **3.** [5 word headline]: [1-2 short sentences describing the trend]\n"
-        "- **4.** [5 word headline]: [1-2 short sentences describing the trend]\n"
-        "- **5.** [5 word headline]: [1-2 short sentences describing the trend]\n\n"
+        "- **[Trend 1]**: [1-2 short sentences describing the trend]\n"
+        "- **[Trend 2]**: [1-2 short sentences describing the trend]\n"
+        "- **[Trend 3]**: [1-2 short sentences describing the trend]\n"
+        "- **[Trend 4]**: [1-2 short sentences describing the trend]\n"
         "**Rising Technologies/Keywords**:\n"
-        "[Comma separated list of specific tech or repeating keywords, e.g., Rust, TPUs, Local LLMs]\n"
+        "[Comma separated list of specific tech, e.g., Rust, TPUs, Local LLMs]\n"
     )
 
     user_prompt = f"Here are the top Hacker News stories for {TODAY_STR}:\n\n{stories_text}\n\nWhat are today's trends?"
@@ -105,53 +114,27 @@ def save_insights(analysis_text: str):
         f.write(json.dumps(json_record) + "\n")
     logger.info(f"Appended structured data to {JSONL_FILE}")
 
-def load_hn_data():
-    """Reads today's data from the database and formats it for the LLM."""
-    logger.info("Fetching today's Hacker News stories from the database...")
-    db = SessionLocal()
-    today = date.today()
-    
-    try:
-        # Query the database for today's stories, ordered by highest score
-        stories = db.query(hacker_news_daily).filter(hacker_news_daily.date_scraped == today).order_by(hacker_news_daily.score.desc()).all()
-        
-        if not stories:
-            return None
-            
-        formatted_stories = [f"[{s.category}] (Score: {s.score}) {s.title}" for s in stories]
-        return "\n".join(f"{i+1}. {story}" for i, story in enumerate(formatted_stories))
-    except Exception as e:
-        logger.error(f"Failed to query database: {e}")
-        return None
-    finally:
-        db.close()
-
-hn_avatar = "https://news.ycombinator.com/y18.svg"
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
-
 def main():
     try:
-        # Step 1: Load Data from DB
-        stories_text = load_hn_data()
-        if not stories_text:
-            logger.warning("No Hacker News stories found for today. Exiting.")
-            return
-            
-        # Step 2: Analyze with Ollama
+        stories_text = load_hn_data(DATA_FILE)
         analysis = analyze_trends(stories_text)
-        
-        # Step 3: Save insights locally
         save_insights(analysis)
         
-        # Step 4: Broadcast to Discord
+        hn_avatar = "https://news.ycombinator.com/y18.svg"
         full_message = f"## 📈 Hacker News Daily Pulse: {TODAY_STR}\n\n{analysis}"
-        send_to_discord(DISCORD_WEBHOOK_URL, full_message, username="HN Trend Bot", avatar_url="https://news.ycombinator.com/y18.svg")
+        DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
         
+        send_to_discord(
+            webhook_url=DISCORD_WEBHOOK_URL, 
+            content=full_message, 
+            username="HN Trend Bot", 
+            avatar_url=hn_avatar
+        )
+        logger.info("Sent daily trends to Discord channel.")
     except Exception as e:
         logger.error(f"Pipeline failed: {e}")
 
 if __name__ == "__main__":
-    # Standardize our logging format if running standalone
-    if not logging.getLogger().hasHandlers():
-        logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
+    # If testing with the uploaded file, uncomment the following line to override DATA_FILE:
+    # DATA_FILE = Path("hn_curated_stories_2026-04-23.csv")
     main()

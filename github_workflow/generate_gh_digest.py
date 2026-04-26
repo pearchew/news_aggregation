@@ -1,16 +1,25 @@
+# 1. Standard Library Imports
 import csv
-from pathlib import Path
-from datetime import datetime, timedelta, date
-import ollama
-import re
-import time
 import logging
-from database_setup.database import SessionLocal
-from database_setup.models import RepoInsight
+import re
+import sys
+import time
+from datetime import datetime, timedelta
+from pathlib import Path
+
+# 2. Third-Party Imports
+import ollama
+
+# 3. Modify Path for Local Imports
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+
+# 4. Local Imports
 from utils import send_to_discord
 
+# --- Script setup ---
 logger = logging.getLogger(__name__)
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
+logging.basicConfig(level=logging.INFO)
 
 def generate_executive_summary(repo_data_string, model_name="gemma4:e4b"):
     """
@@ -134,76 +143,80 @@ You MUST follow a two-step process:
         return ""
 
 def main():
-    today = date.today()
+    today = datetime.now()
     today_str = today.strftime("%Y-%m-%d")
-    
-    output_folder = Path("outputs") / Path("gh_insights")
+    output_folder = Path("outputs")
     output_folder.mkdir(parents=True, exist_ok=True)
     output_md = output_folder / f"past_day_digest_{today_str}.md"
 
-    logger.info("Gathering repository insights from the database...")
-    db = SessionLocal()
-    
-    try:
-        # 2. Query the database instead of CSVs
-        todays_insights = db.query(RepoInsight).filter(RepoInsight.date_scraped == today).all()
-        
-        if not todays_insights:
-            logger.warning("No repository insights found in the database for today. Please run generate_repo_analysis.py first.")
-            return
+    logger.info("Gathering insights from the past day...")
+    aggregated_data = "<repositories>\n"
+    files_processed = 0
+    for i in range(1):
+        target_date = (today - timedelta(days=i)).strftime("%Y-%m-%d")
+        input_csv = (
+            output_folder / "read_me_insights" / f"repo_insights_daily_{target_date}.csv"
+        )
 
-        logger.info(f"Found {len(todays_insights)} analyzed repositories for today.")
-        
-        # 3. Build the XML-like string for Ollama
-        aggregated_data = "<repositories>\n"
-        for insight in todays_insights:
-            aggregated_data += "<repo>\n"
-            aggregated_data += f"  <name>{insight.repo_name}</name>\n"
-            aggregated_data += f"  <topics>{insight.key_topics}</topics>\n"
-            aggregated_data += f"  <goal>{insight.key_goals}</goal>\n"
-            aggregated_data += f"  <use_cases>{insight.key_use_cases}</use_cases>\n"
-            aggregated_data += "</repo>\n"
-        aggregated_data += "</repositories>"
+        if input_csv.exists():
+            logger.info(f"  - Found data for {target_date}")
+            files_processed += 1
+            aggregated_data += f"\n\n"
+            try:
+                with open(input_csv, mode="r", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        aggregated_data += "<repo>\n"
+                        aggregated_data += f"  <name>{row['repo_name']}</name>\n"
+                        aggregated_data += f"  <topics>{row['key_topics']}</topics>\n"
+                        aggregated_data += f"  <goal>{row['key_goals']}</goal>\n"
+                        aggregated_data += (
+                            f"  <use_cases>{row['key_use_cases']}</use_cases>\n"
+                        )
+                        aggregated_data += "</repo>\n"
+            except Exception as e:
+                logger.error(f"Error reading {input_csv}: {e}")
+        else:
+            logger.info(f"  - No data found for {target_date} (Skipping)")
+    aggregated_data += "</repositories>"
 
-    except Exception as e:
-        logger.error(f"Database query failed: {e}")
+    if (
+        files_processed == 0
+        or aggregated_data.strip() == "<repositories>\n</repositories>"
+    ):
+        logger.info(
+            "\nNo CSV files found for the past day. Please run the analyze_readmes.py script first."
+        )
         return
-    finally:
-        db.close()
 
-    logger.info(f"\n🤖 Synthesizing trends with Ollama... (This might take a moment depending on data size)")
+    logger.info(
+        f"\n🤖 Synthesizing {files_processed} days of trends with Ollama... (This might take a moment depending on data size)"
+    )
     
-    # 4. Generate the digests (Your prompt logic stays untouched)
+    logger.info("\nGenerating main trends...")
     summary = generate_executive_summary(aggregated_data, "qwen3:8b")
+    logger.info("Formulating Deep Dive recommendation...")
     deep_dive = generate_deep_dive_recommendation(aggregated_data, "qwen3:8b")
+    logger.info("Finding the Fun Pick...")
     fun_pick = generate_fun_pick(aggregated_data, "qwen3:8b")
     
     if summary:
-        # Save locally
+        # Save everything to the local Markdown file as one cohesive document
         full_digest_content = f"{summary}\n\n---\n\n{deep_dive}\n\n---\n\n{fun_pick}"
         with open(output_md, mode='w', encoding='utf-8') as f:
-            f.write(f"# Weekly GitHub Trending Digest - Ending {today_str}\n\n")
+            f.write(f"# Daily GitHub Trending Digest - {today_str}\n\n")
             f.write(full_digest_content)
-        logger.info(f"✅ Success! Your weekly digest has been saved locally to {output_md}")
-        
-        # Send to Discord using utils
+        logger.info(f"\n✅ Success! Your daily digest has been saved locally to {output_md}")
+        msg1 = f"**📊 {today_str} GitHub Trending Digest**\n\n{summary}"
+        DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
         github_avatar = "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-        
-        msg1 = f"**📊 Past 7 day GitHub Trending Digest ({today_str})**\n\n{summary}"
         send_to_discord(DISCORD_WEBHOOK_URL, msg1, username="Trending Repo Digest", avatar_url=github_avatar)
         time.sleep(1.5)
-        
-        if deep_dive:
-            send_to_discord(DISCORD_WEBHOOK_URL, deep_dive, username="Trending Repo Digest", avatar_url=github_avatar)
-            time.sleep(1.5)
-            
-        if fun_pick:
-            send_to_discord(DISCORD_WEBHOOK_URL, fun_pick, username="Trending Repo Digest", avatar_url=github_avatar)
-            
+        send_to_discord(DISCORD_WEBHOOK_URL, deep_dive, username="Trending Repo Digest", avatar_url=github_avatar)
+        time.sleep(1.5)
+        send_to_discord(DISCORD_WEBHOOK_URL, fun_pick, username="Trending Repo Digest", avatar_url=github_avatar)
     else:
-        logger.error("❌ Failed to generate the main summary. Halting execution.")
+        logger.error("\n❌ Failed to generate the main summary. Halting execution.")
 
 if __name__ == "__main__":
-    if not logging.getLogger().hasHandlers():
-        logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
     main()

@@ -1,13 +1,12 @@
 import requests
+import csv
 import concurrent.futures
-from datetime import date
+from pathlib import Path
+import datetime
 import logging
 
-# 1. Import your database tools
-from database_setup.database import SessionLocal
-from database_setup.models import hacker_news_daily
-
 logger = logging.getLogger(__name__)
+
 BASE_URL = "https://hacker-news.firebaseio.com/v0"
 
 def fetch_item_details(item_id):
@@ -32,15 +31,20 @@ def get_top_items_for_category(endpoint, category_name, limit=20, sort_by_score=
         logger.error(f"Error fetching {category_name} IDs: {e}")
         return []
 
+    # If we need to sort by score, fetch up to the latest 200 items (the max for Ask/Show endpoints).
+    # If not (like Top Stories which are pre-ranked), just fetch the first `limit` items to save time.
     ids_to_fetch = story_ids[:200] if sort_by_score else story_ids[:limit]
+    
     logger.info(f"Retrieving data for {len(ids_to_fetch)} items in {category_name}...")
     
     valid_stories = []
+    # Use ThreadPoolExecutor to fetch items in parallel (much faster!)
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         results = executor.map(fetch_item_details, ids_to_fetch)
         
         for item in results:
             if item and item.get("type") == "story" and not item.get("dead") and not item.get("deleted"):
+                # Clean up the data and add our category label
                 valid_stories.append({
                     "category": category_name,
                     "id": item.get("id"),
@@ -51,26 +55,33 @@ def get_top_items_for_category(endpoint, category_name, limit=20, sort_by_score=
                     "url": item.get("url", f"https://news.ycombinator.com/item?id={item.get('id')}")
                 })
 
+    # Sort descending by score if requested
     if sort_by_score:
         valid_stories.sort(key=lambda x: x["score"], reverse=True)
 
     return valid_stories[:limit]
 
-def scrape_hn_to_db():
+def scrape_hn_to_csv():
     """
-    Main function to scrape Ask HN, Show HN, and Top Stories and save to SQLite.
+    Main function to scrape Ask HN, Show HN, and Top Stories and export to CSV.
     """
-    logger.info("--- STARTING HACKER NEWS SCRAPE ---")
-    
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    # 1. Setup outputs folder
+    output_dir = Path("outputs")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    file_path = output_dir / f"hn_curated_stories_{today}.csv"
+
     all_stories = []
 
-    # 1. Fetch stories
+    # 2. Fetch the top 50 Ask HN stories (sorted by highest score)
     ask_stories = get_top_items_for_category("askstories", "Ask HN", limit=50, sort_by_score=True)
     all_stories.extend(ask_stories)
 
+    # 3. Fetch the top 50 Show HN stories (sorted by highest score)
     show_stories = get_top_items_for_category("showstories", "Show HN", limit=50, sort_by_score=True)
     all_stories.extend(show_stories)
 
+    # 4. Fetch the 50 Top Stories of the day (already ranked by HN)
     top_stories = get_top_items_for_category("topstories", "Top Story", limit=50, sort_by_score=False)
     all_stories.extend(top_stories)
 
@@ -78,56 +89,19 @@ def scrape_hn_to_db():
         logger.warning("No stories were fetched. Exiting.")
         return
 
-    logger.info(f"Preparing to save {len(all_stories)} total stories to the database...")
-
-    # 2. Save to Database
-    db = SessionLocal()
-    today = date.today()
-    added_count = 0
-    skipped_count = 0
-
+    # 5. Write everything to CSV
+    fieldnames = ["category", "id", "title", "by", "score", "time", "url"]
+    logger.info(f"\nWriting {len(all_stories)} total stories to {file_path.absolute()}...")
+    
     try:
-        # Get a list of all existing Hacker News IDs currently in the database
-        # This prevents us from crashing on duplicate entries
-        existing_ids_tuples = db.query(hacker_news_daily.hn_id).all()
-        existing_ids = {row[0] for row in existing_ids_tuples}
-
-        for story in all_stories:
-            story_id = story.get("id")
+        with open(file_path, mode='w', newline='', encoding='utf-8') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(all_stories)
             
-            # Uniqueness Check: If we already have this post, skip it
-            if story_id in existing_ids:
-                skipped_count += 1
-                continue
-
-            new_story = hacker_news_daily(
-                date_scraped=today,
-                category=story.get("category"),
-                hn_id=story_id,
-                title=story.get("title"),
-                author=story.get("by"),
-                score=story.get("score"),
-                time_posted=story.get("time"),
-                url=story.get("url")
-            )
-            
-            db.add(new_story)
-            # Add to our local set so we don't accidentally add it twice in the same run!
-            existing_ids.add(story_id) 
-            added_count += 1
-
-        db.commit()
-        logger.info(f"✅ Successfully added {added_count} new stories to the database! (Skipped {skipped_count} duplicates)")
-        
-    except Exception as e:
-        logger.error(f"❌ Error saving HN stories to DB: {e}")
-        db.rollback()
-    finally:
-        db.close()
+        logger.info("Successfully exported data!")
+    except IOError as e:
+        logger.error(f"Error writing to CSV: {e}")
 
 if __name__ == "__main__":
-    # Setup basic logging just in case this is run directly instead of through main.py
-    if not logging.getLogger().hasHandlers():
-        logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
-        
-    scrape_hn_to_db()
+    scrape_hn_to_csv()

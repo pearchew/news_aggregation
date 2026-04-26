@@ -5,11 +5,9 @@ from pathlib import Path
 from datetime import datetime
 import ollama
 import logging
-from database_setup.database import SessionLocal
-from database_setup.models import RepoInsight
-from datetime import date
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 def extract_readme_insights(readme_content, model_name="gemma4:e4b"):
     """
@@ -27,7 +25,7 @@ def extract_readme_insights(readme_content, model_name="gemma4:e4b"):
 
     README CONTENT:
     ---
-    {readme_content[:6000]} # Truncating to 6000 chars to comfortably fit context windows and speed up inference
+    {readme_content[:4000]} # Truncating to 6000 chars to comfortably fit context windows and speed up inference
     ---
     """
 
@@ -51,16 +49,17 @@ def extract_readme_insights(readme_content, model_name="gemma4:e4b"):
 
 def main():
     today = datetime.now().strftime("%Y-%m-%d")
-    output_folder = Path("outputs")
-    readme_folder = output_folder / "READMEs"
-    output_csv = output_folder / Path("gh_insights") / Path("csv") / f"repo_insights_daily_{today}.csv"
+    output_folder = Path("outputs")/"read_me_insights"
+    readme_folder = Path("outputs") / "read_me_files"
+    output_csv = output_folder / f"repo_insights_daily_{today}.csv"
+    output_folder.mkdir(parents=True, exist_ok=True)
 
     if not readme_folder.exists():
         logger.warning(f"Could not find the folder {readme_folder}. Have you run get_git_readme.py today?")
         return
 
     extracted_data = []
-
+    logger.info(f"Found {len(list(readme_folder.glob(f'README_*_{today}.md')))} README files to analyze.")
     # Find all READMEs downloaded today
     for readme_path in readme_folder.glob(f"README_*_{today}.md"):
         # Extract the repo name from the filename
@@ -86,33 +85,17 @@ def main():
 
     # Save results to a CSV file
     if extracted_data:
-        db = SessionLocal()
-    today_date = date.today()
-    
-    for item in extracted_data:
-        new_insight = RepoInsight(
-            date_scraped=today_date,
-            repo_name=item["repo_name"],
-            key_topics=item["key_topics"],
-            key_goals=item["key_goals"],
-            key_use_cases=item["key_use_cases"]
-        )
-        db.add(new_insight)
-    
-    db.commit()
-    db.close()
-    logger.info("✅ Saved insights directly to the database!")
-    #     logger.info(f"\nWriting {len(extracted_data)} insights to {output_csv}...")
-    #     fieldnames = ["repo_name", "key_topics", "key_goals", "key_use_cases"]
+        logger.info(f"\nWriting {len(extracted_data)} insights to {output_csv}...")
+        fieldnames = ["repo_name", "key_topics", "key_goals", "key_use_cases"]
         
-    #     with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
-    #         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-    #         writer.writeheader()
-    #         writer.writerows(extracted_data)
+        with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(extracted_data)
         
-    #     logger.info("✅ Pipeline complete! Your daily digest data is ready.")
-    # else:
-    #     logger.warning("No insights were extracted. Check your Ollama installation and logs.")
+        logger.info("✅ Pipeline complete! Your daily digest data is ready.")
+    else:
+        logger.warning("No insights were extracted. Check your Ollama installation and logs.")
 
 if __name__ == "__main__":
     main()
