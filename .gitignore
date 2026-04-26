@@ -1,7 +1,8 @@
-gh_*.csv
-hn_*.csv
-hn_*.md
-gh_python_*.csv
-hn_python_*.csv
-README_*.md
-*.pdf
+website_scraping_workflow/bis_research_papers
+website_scraping_workflow/cc_judge_insights
+website_scraping_workflow/hkma_annual_reports
+website_scraping_workflow/hkma_papers
+website_scraping_workflow/sfc_papers
+website_scraping_workflow/taylor_wessing_insights
+hn_workflow/outputs
+github_workflow/outputs

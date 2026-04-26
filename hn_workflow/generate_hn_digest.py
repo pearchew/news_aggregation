@@ -27,7 +27,7 @@ BASE_DIR = Path("outputs")
 DATA_FILE = BASE_DIR / f"hn_curated_stories_{TODAY_STR}.csv" # Assuming scraper saves with date
 INSIGHTS_DIR = BASE_DIR / "hn_insights"
 MD_DIR = INSIGHTS_DIR / "markdown"
-JSONL_FILE = INSIGHTS_DIR / "trends_history.jsonl"
+JSONL_FILE = "trends_history.jsonl"
 
 # Ensure directories exist
 MD_DIR.mkdir(parents=True, exist_ok=True)
