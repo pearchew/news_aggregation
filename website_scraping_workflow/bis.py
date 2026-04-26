@@ -18,7 +18,7 @@ def sanitize_filename(filename):
 def download_bis_papers(api_url, download_folder):
     """
     Fetches the JSON from the given API URL, extracts the domain, downloads
-    associated PDFs if published in 2023 or later, and tracks new downloads.
+    associated PDFs if published in 2024 or later, and tracks new downloads.
     """
     base_domain = "https://www.bis.org"
     topic_domain = api_url.split("/")[-1].replace(".json", "").replace("_research", "")
@@ -40,7 +40,7 @@ def download_bis_papers(api_url, download_folder):
 
     document_list = data.get("list", {})
     total_docs = len(document_list)
-    print(f"Found {total_docs} total documents. Filtering for 2023 and newer...\n")
+    print(f"Found {total_docs} total documents. Filtering for 2024 and newer...\n")
 
     for index, (path_key, doc_info) in enumerate(document_list.items(), start=1):
         doc_path = doc_info.get("path")
@@ -50,13 +50,13 @@ def download_bis_papers(api_url, download_folder):
         pub_date = doc_info.get("publication_start_date", "Unknown_Date")
         raw_title = doc_info.get("short_title", "Untitled_Document")
         
-        # Filter for 2023 and newer
+        # Filter for 2024 and newer
         try:
             pub_year = int(pub_date.split("-")[0])
         except (ValueError, IndexError):
             pub_year = 0 
 
-        if pub_year < 2023:
+        if pub_year < 2024:
             continue
 
         pdf_url = f"{base_domain}{doc_path}.pdf"

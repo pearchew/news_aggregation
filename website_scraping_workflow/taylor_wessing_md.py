@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 import markdownify
 
 # 1. Set up the environment
-output_dir = "taylor_wessing_insights"
+output_dir = "taylorwessing_insights"
 os.makedirs(output_dir, exist_ok=True)
 
 base_domain = "https://www.taylorwessing.com"
