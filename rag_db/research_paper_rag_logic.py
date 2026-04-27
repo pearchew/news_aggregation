@@ -83,6 +83,38 @@ def process_single_paper(file_path, source_label, storage_context):
     
     return data_dict
 
+def process_single_paper_no_rag(file_path, source_label, storage_context):
+    """Processes a single file in isolation, appends to CSV, then adds to Brain."""
+    csv_path = RAG_DB_DIR / "paper_insights_database.csv"
+    prompt = "Analyze this specific document and extract the exact title and 4 linked findings. Do not hallucinate."
+    
+    # 1. Load the document
+    documents = SimpleDirectoryReader(input_files=[str(file_path)]).load_data()
+    
+    # --- THE FIX: CREATE A TEMPORARY IN-MEMORY INDEX ---
+    # We do NOT pass the storage_context here. This forces the AI to ONLY look at this one file.
+    temp_index = VectorStoreIndex.from_documents(documents)
+    
+    # 2. Extract Structured Data from the isolated file
+    query_engine = temp_index.as_query_engine(output_cls=PaperInsights, response_mode="tree_summarize")
+    response = query_engine.query(prompt)
+    
+    # 3. Prepare metadata
+    data_dict = response.response.model_dump()
+    data_dict['source_org'] = source_label
+    data_dict['file_name'] = file_path.name
+    
+    # 4. Append to CSV
+    df = pd.DataFrame([data_dict])
+    ordered_columns = [
+        'source_org', 'file_name', 'paper_title', 
+        'insight_1', 'insight_2', 'insight_3', 'insight_4'
+    ]
+    df = df[ordered_columns]
+    df.to_csv(csv_path, mode='a', header=not csv_path.exists(), index=False)
+    
+    return data_dict
+
 def generate_contextual_digest(new_paper_data, storage_context):
     """Compares new paper to the brain and appends to daily_digests.txt in rag_db."""
     output_path = RAG_DB_DIR / "daily_digests.txt"
