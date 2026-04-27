@@ -7,3 +7,4 @@ website_scraping_workflow/taylorwessing_insights
 hn_workflow/outputs
 github_workflow/outputs
 rag_db/paper_brain_db/*
+daily_digests.txt

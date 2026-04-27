@@ -92,9 +92,16 @@ def generate_contextual_digest(new_paper_data, storage_context):
     
     digest_prompt = f"""
     New Paper: "{new_paper_data['paper_title']}"
-    Main Insight: {new_paper_data['insight_1']}
+    Main Insight 1: {new_paper_data['insight_1']}
+    Main Insight 2: {new_paper_data['insight_2']}
+    Main Insight 3: {new_paper_data['insight_3']}
+    Main Insight 4: {new_paper_data['insight_4']}
     
-    Write a 'digest' paragraph summarizing this finding and connecting it to previous papers in our database. Limit it to 2000 characters.
+    Write a 'digest' paragraph summarizing the main insights as if for a CTO.
+    
+    Finish with a sentence stating "This paper is most similar to [insert 1 paper from our database, and why it is relevant - ONLY INCLUDE PAPERS FROM OUR DATABASE. Reply with "No similar papers" if you cannot find any]".
+    
+    Limit it to 2000 characters.
     """
     
     response = query_engine.query(digest_prompt)

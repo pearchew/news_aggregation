@@ -26,7 +26,7 @@ def run_test_on_single_file():
     target_label = "CC_Judge"
     
     # Build the full, exact path to the file using pathlib
-    target_file = PAPERS_DIR / "cc_judge_insights" / "2 April 2025_AI is changing innovation – here’s how.md"
+    target_file = PAPERS_DIR / "hkma_papers" / "03 December 2025_The Stabilising Effect of Domestic Investor Participation in Equity Fund Markets.pdf"
 
     # Quick safety check to make sure you typed the name perfectly
     if not target_file.exists():
