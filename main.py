@@ -52,6 +52,7 @@ def main():
         scrape_orchestrator_main()
     except Exception as e:
         logger.error(f"❌ Website Scraping Workflow failed: {e}")
+        
 
     logger.info("🎉 All workflows completed successfully!")
 
