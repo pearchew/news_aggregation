@@ -67,6 +67,18 @@ def main():
         repo_name = readme_path.name.replace("README_", "").replace(f"_{today}.md", "")
         logger.info(f"🤖 Analyzing {repo_name}...")
         
+        try:
+            # Safely attempt to read the file
+            content = readme_path.read_text(encoding='utf-8', errors='ignore')
+        except FileNotFoundError:
+            # If the file doesn't exist (e.g. broken symlink or deleted mid-run), skip it
+            logger.error(f"❌ File not found: {readme_path}. Skipping.")
+            continue
+        except Exception as e:
+            # Catch any other read errors
+            logger.error(f"❌ Error reading {readme_path}: {e}. Skipping.")
+            continue
+        
         content = readme_path.read_text(encoding='utf-8', errors='ignore')
         
         insights = extract_readme_insights(content)

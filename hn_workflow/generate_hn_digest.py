@@ -27,7 +27,7 @@ BASE_DIR = Path("outputs")
 DATA_FILE = BASE_DIR / f"hn_curated_stories_{TODAY_STR}.csv" # Assuming scraper saves with date
 INSIGHTS_DIR = BASE_DIR / "hn_insights"
 MD_DIR = INSIGHTS_DIR / "markdown"
-JSONL_FILE = "trends_history.jsonl"
+JSONL_FILE = Path("trends_history.jsonl")
 
 # Ensure directories exist
 MD_DIR.mkdir(parents=True, exist_ok=True)
@@ -135,6 +135,4 @@ def main():
         logger.error(f"Pipeline failed: {e}")
 
 if __name__ == "__main__":
-    # If testing with the uploaded file, uncomment the following line to override DATA_FILE:
-    # DATA_FILE = Path("hn_curated_stories_2026-04-23.csv")
     main()

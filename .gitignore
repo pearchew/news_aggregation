@@ -7,3 +7,5 @@ outputs/hn_insights/markdown/*
 website_scraping_workflow/outputs
 website_scraping_workflow/__pycache__
 __pycache__
+github_workflow/outputs
+outputs/*
