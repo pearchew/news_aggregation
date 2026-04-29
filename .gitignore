@@ -8,3 +8,5 @@ hn_workflow/outputs
 github_workflow/outputs
 rag_db/paper_brain_db/*
 daily_digests.txt
+outputs/READMEs/*
+outputs/hn_insights/markdown/*
