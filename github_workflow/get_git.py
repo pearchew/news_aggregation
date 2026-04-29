@@ -3,6 +3,12 @@ import csv
 from datetime import datetime
 import gtrending
 import logging
+import sys
+from pathlib import Path
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from utils import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -22,8 +28,8 @@ def fetch_and_save_repos():
         return
 
     # Create the outputs directory if it doesn't exist
-    output_dir = "outputs/daily_scrapes"
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = OUTPUT_DIR / "github" / "daily_scrapes"
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Format the filename: gh_{applied filters}_{date_scraped}.csv
     date_scraped = datetime.now().strftime("%Y-%m-%d")
@@ -68,8 +74,8 @@ def fetch_and_save_developers():
         return
 
     # Create the outputs directory if it doesn't exist
-    output_dir = "outputs/daily_scrapes"
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = OUTPUT_DIR / "github" / "daily_scrapes"
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Format the filename: gh_devs_{applied filters}_{date_scraped}.csv
     date_scraped = datetime.now().strftime("%Y-%m-%d")
@@ -112,6 +118,10 @@ def fetch_and_save_developers():
             
     logger.info(f"Successfully saved {len(flattened_devs)} developers to '{filepath}'")
 
-if __name__ == "__main__":
+
+def main():
     fetch_and_save_repos()
     fetch_and_save_developers()
+    
+if __name__ == "__main__":
+    main()

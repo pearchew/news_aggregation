@@ -8,12 +8,19 @@ from playwright.sync_api import sync_playwright
 from dateutil import parser
 from datetime import datetime, timedelta, timezone
 
+import sys
+from pathlib import Path
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from utils import OUTPUT_DIR
+
 def sanitize_filename(name):
     return re.sub(r'[<>:"/\\|?*]', '-', name).strip()
 
 def scrape_cc_judge(cutoff_date):
-    output_dir = "outputs/cc_judge_insights"
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = OUTPUT_DIR / "website_scraping" / "cc_judge_insights"
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     url = "https://www.jbs.cam.ac.uk/insight/"
     headers = {

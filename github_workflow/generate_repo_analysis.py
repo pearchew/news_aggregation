@@ -5,6 +5,11 @@ from pathlib import Path
 from datetime import datetime
 import ollama
 import logging
+import sys
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from utils import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -49,8 +54,8 @@ def extract_readme_insights(readme_content, model_name="gemma4:e4b"):
 
 def main():
     today = datetime.now().strftime("%Y-%m-%d")
-    output_folder = Path("outputs")/"read_me_insights"
-    readme_folder = Path("outputs") / "read_me_files"
+    output_folder = OUTPUT_DIR / "github" / "read_me_insights"
+    readme_folder = OUTPUT_DIR / "github" / "read_me_files"
     output_csv = output_folder / f"repo_insights_daily_{today}.csv"
     output_folder.mkdir(parents=True, exist_ok=True)
 

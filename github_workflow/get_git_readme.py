@@ -3,11 +3,16 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 import logging
+import sys
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from utils import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def save_github_readme(owner, repo, filename="README.md", output_folder="outputs"):
+def save_github_readme(owner, repo, filename="README.md"):
     """
     Fetches the raw README.md from a GitHub repository and saves it locally.
     """
@@ -27,7 +32,7 @@ def save_github_readme(owner, repo, filename="README.md", output_folder="outputs
         
         # Check if the request was successful
         if response.status_code == 200:
-            output_path = Path(output_folder)/"read_me_files"
+            output_path = OUTPUT_DIR / "github" / "read_me_files"
             output_path.mkdir(parents=True, exist_ok=True)
             today = datetime.now().strftime("%Y-%m-%d")
             file_to_save = output_path / f"README_{repo}_{today}.md"
@@ -56,8 +61,8 @@ def parse_github_url(url):
 
 def main():
     today = datetime.now().strftime("%Y-%m-%d")
-    file_path_repo = Path('outputs/daily_scrapes')/f'gh_repos_daily_{today}.csv'
-    file_path_dev = Path('outputs/daily_scrapes')/f'gh_devs_daily_{today}.csv'
+    file_path_repo = OUTPUT_DIR / 'github' / 'daily_scrapes' / f'gh_repos_daily_{today}.csv'
+    file_path_dev = OUTPUT_DIR / 'github' / 'daily_scrapes' / f'gh_devs_daily_{today}.csv'
     df_repo = pd.read_csv(file_path_repo)
     df_dev = pd.read_csv(file_path_dev)[['username', 'repo_name', 'repo_url']]
     df_repo[['owner', 'repo_name']] = df_repo['url'].apply(lambda x: pd.Series(parse_github_url(x)))

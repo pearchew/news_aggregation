@@ -1,10 +1,16 @@
 import os
+import sys
 import time
+from pathlib import Path
 import requests
 import re
 import html
 from dateutil import parser
 from datetime import datetime, timedelta, timezone
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from utils import OUTPUT_DIR
 
 def sanitize_filename(filename):
     clean_name = html.unescape(filename)
@@ -18,8 +24,8 @@ def scrape_bis(cutoff_date):
         "https://www.bis.org/api/document_lists/green_finance_research.json",
         "https://www.bis.org/api/document_lists/fintech_research.json"
     ]
-    download_folder = "outputs/bis_research_papers"
-    os.makedirs(download_folder, exist_ok=True)
+    download_folder = OUTPUT_DIR / "website_scraping" / "bis_research_papers"
+    download_folder.mkdir(parents=True, exist_ok=True)
     
     base_domain = "https://www.bis.org"
     new_downloads = []

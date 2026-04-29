@@ -1,11 +1,16 @@
+import sys
 import requests
+import os
 import csv
 import concurrent.futures
 from pathlib import Path
 import datetime
 import logging
-
 logger = logging.getLogger(__name__)
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from utils import OUTPUT_DIR
 
 BASE_URL = "https://hacker-news.firebaseio.com/v0"
 
@@ -67,7 +72,7 @@ def scrape_hn_to_csv():
     """
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     # 1. Setup outputs folder
-    output_dir = Path("outputs")
+    output_dir = OUTPUT_DIR / "hacker_news" / "raw_data"
     output_dir.mkdir(parents=True, exist_ok=True)
     file_path = output_dir / f"hn_curated_stories_{today}.csv"
 

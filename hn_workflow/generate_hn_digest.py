@@ -1,5 +1,6 @@
 # 1. Standard Library Imports
 import csv
+import os
 import logging
 import re
 import sys
@@ -15,7 +16,7 @@ root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
 
 # 4. Local Imports
-from utils import send_to_discord
+from utils import send_to_discord, OUTPUT_DIR
 
 # --- Script setup ---
 logger = logging.getLogger(__name__)
@@ -23,13 +24,14 @@ logging.basicConfig(level=logging.INFO)
 
 MODEL_NAME = "qwen3:8b"
 TODAY_STR = datetime.now().strftime("%Y-%m-%d")
-BASE_DIR = Path("outputs")
-DATA_FILE = BASE_DIR / f"hn_curated_stories_{TODAY_STR}.csv" # Assuming scraper saves with date
-INSIGHTS_DIR = BASE_DIR / "hn_insights"
+BASE_DIR = OUTPUT_DIR / "hacker_news"
+DATA_FILE = BASE_DIR / "raw_data" / f"hn_curated_stories_{TODAY_STR}.csv" 
+INSIGHTS_DIR = BASE_DIR / "insights"
 MD_DIR = INSIGHTS_DIR / "markdown"
-JSONL_FILE = Path("trends_history.jsonl")
+JSONL_FILE = BASE_DIR / "tracking" / "trends_history.jsonl"
 
-# Ensure directories exist
+# Ensure tracking directory exists
+JSONL_FILE.parent.mkdir(parents=True, exist_ok=True)
 MD_DIR.mkdir(parents=True, exist_ok=True)
 
 def load_hn_data(file_path: Path):
@@ -55,10 +57,10 @@ def analyze_trends(stories_text: str):
         "and extract the overarching themes, tools, and developer sentiment. "
         "Keep your descriptions concise to fit within strict character limits of 2000 characters. "
         "Output your response strictly in the following format:\n\n"
-        "- **[Trend 1]**: [1-2 short sentences describing the trend]\n"
-        "- **[Trend 2]**: [1-2 short sentences describing the trend]\n"
-        "- **[Trend 3]**: [1-2 short sentences describing the trend]\n"
-        "- **[Trend 4]**: [1-2 short sentences describing the trend]\n"
+        "- **Trend 1 Name**: [2 short sentences describing the trend and its implications]\n"
+        "- **Trend 2 Name**: [2 short sentences describing the trend and its implications]\n"
+        "- **Trend 3 Name**: [2 short sentences describing the trend and its implications]\n"
+        "- **Trend 4 Name**: [2 short sentences describing the trend and its implications]\n"
         "**Rising Technologies/Keywords**:\n"
         "[Comma separated list of specific tech, e.g., Rust, TPUs, Local LLMs]\n"
     )
@@ -122,8 +124,7 @@ def main():
         
         hn_avatar = "https://news.ycombinator.com/y18.svg"
         full_message = f"## 📈 Hacker News Daily Pulse: {TODAY_STR}\n\n{analysis}"
-        DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
-        
+        DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
         send_to_discord(
             webhook_url=DISCORD_WEBHOOK_URL, 
             content=full_message, 

@@ -5,20 +5,22 @@ import sys
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext
 
 # Import your newly refactored scraper functions
-from bis import scrape_bis
-from cc_judge import scrape_cc_judge
-from hkma_annual import scrape_hkma_annual
-from hkma_research import scrape_hkma_research
-from sfc import scrape_sfc
-from taylor_wessing_md import scrape_taylor_wessing
+# Import your newly refactored scraper functions
+from website_scraping_workflow.bis import scrape_bis
+from website_scraping_workflow.cc_judge import scrape_cc_judge
+from website_scraping_workflow.hkma_annual import scrape_hkma_annual
+from website_scraping_workflow.hkma_research import scrape_hkma_research
+from website_scraping_workflow.sfc import scrape_sfc
+from website_scraping_workflow.taylor_wessing_md import scrape_taylor_wessing
+import os
+# Load from the environment variables (loaded by main.py)
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
-# Import your utility functions
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
 from utils import process_single_paper_no_rag, send_to_discord
 
 # Ensure this matches your actual webhook URL
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
 
 def main():
     print("Starting Autonomous Research Aggregator...")

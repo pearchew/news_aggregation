@@ -3,9 +3,16 @@ import requests
 import os
 import pandas as pd
 from pathlib import Path
+from dotenv import load_dotenv # <-- NEW
 from pydantic import BaseModel, Field
 from llama_index.core import SimpleDirectoryReader, SummaryIndex
 from llama_index.llms.ollama import Ollama
+
+load_dotenv()
+
+ROOT_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = ROOT_DIR / "outputs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
 

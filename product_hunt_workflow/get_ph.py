@@ -1,3 +1,4 @@
+import os
 import json
 import requests
 import time
@@ -12,9 +13,9 @@ sys.path.append(str(root_dir))
 from utils import send_to_discord
 
 # Configuration
-TOKEN = "fm5s2FoN_YsNt-zvc3qtPRpfJ8w2JlSZPhBqFztw15s"
+TOKEN = os.getenv("PH_TOKEN")
 API_URL = "https://api.producthunt.com/v2/api/graphql"
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 def fetch_top_products(posted_after, posted_before, limit=10):
     """
@@ -116,7 +117,7 @@ def send_products_sequentially(title, edges, webhook_url):
 
 # --- Execution Logic ---
 
-if __name__ == "__main__":
+def main():
     now = datetime.now(timezone.utc)
     day_ago = now - timedelta(days=1)
     week_ago = now - timedelta(days=7)
@@ -134,3 +135,6 @@ if __name__ == "__main__":
 
     weekly_posts = fetch_top_products(posted_after=week_ago_str, posted_before=now_str)
     send_products_sequentially("Top Products of the Week", weekly_posts, DISCORD_WEBHOOK_URL)
+
+if __name__ == "__main__":
+    main()

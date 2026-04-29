@@ -1,45 +1,57 @@
-import subprocess
-import sys
 import logging
+from dotenv import load_dotenv
 
-# Configure logging for the main orchestrator
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# --- Import your workflow main functions ---
+# These imports rely on the __init__.py files being present in the respective folders
+from product_hunt_workflow.get_ph import main as get_ph_main
+from hn_workflow.get_hn import scrape_hn_to_csv
+from hn_workflow.generate_hn_digest import main as generate_hn_main
+from github_workflow.get_git import main as get_git_main
+from github_workflow.get_git_readme import main as get_git_readme_main
+from github_workflow.generate_repo_analysis import main as generate_repo_analysis_main
+from github_workflow.generate_gh_digest import main as generate_gh_digest_main
+from website_scraping_workflow.scrape_orchestrator import main as scrape_orchestrator_main
+
+# Configure logging at the root level exactly once
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-def run_script(script_path):
-    """
-    Runs a python script using the current python executable to maintain the virtual environment.
-    """
-    logger.info(f"========== Running {script_path} ==========")
-    try:
-        # sys.executable guarantees it uses the activated venv Python
-        subprocess.run([sys.executable, script_path], check=True)
-        logger.info(f"✅ Successfully finished {script_path}\n")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"❌ Error running {script_path}. Process exited with code {e.returncode}\n")
-
 def main():
+    # Load environment variables from the .env file
+    load_dotenv()
+    
     logger.info("🚀 Starting Autonomous Tech News & Trends Aggregator Pipeline...\n")
 
-    # 1. Product Hunt Workflow
-    run_script("product_hunt_workflow/get_ph.py")
+    try:
+        logger.info("========== Running Product Hunt Workflow ==========")
+        get_ph_main()
+    except Exception as e:
+        logger.error(f"❌ Product Hunt Workflow failed: {e}")
 
-    # 2. Hacker News Workflow
-    # Note: Requires fetching data first, then generating the digest
-    run_script("hn_workflow/get_hn.py")
-    run_script("hn_workflow/generate_hn_digest.py")
+    try:
+        logger.info("========== Running Hacker News Workflow ==========")
+        scrape_hn_to_csv()
+        generate_hn_main()
+    except Exception as e:
+        logger.error(f"❌ Hacker News Workflow failed: {e}")
 
-    # 3. GitHub Workflow
-    # Note: Sequentially fetches repos -> downloads readmes -> analyzes readmes -> generates digest
-    run_script("github_workflow/get_git.py")
-    run_script("github_workflow/get_git_readme.py")
-    run_script("github_workflow/generate_repo_analysis.py")
-    run_script("github_workflow/generate_gh_digest.py")
+    try:
+        logger.info("========== Running GitHub Workflow ==========")
+        get_git_main()
+        get_git_readme_main()
+        generate_repo_analysis_main()
+        generate_gh_digest_main()
+    except Exception as e:
+        logger.error(f"❌ GitHub Workflow failed: {e}")
 
-    # 4. Website Scraping Workflow
-    run_script("website_scraping_workflow/scrape_orchestrator.py")
-
-    # (RSS feeds workflow has been excluded from the main execution loop)
+    try:
+        logger.info("========== Running Website Scraping Workflow ==========")
+        scrape_orchestrator_main()
+    except Exception as e:
+        logger.error(f"❌ Website Scraping Workflow failed: {e}")
 
     logger.info("🎉 All workflows completed successfully!")
 

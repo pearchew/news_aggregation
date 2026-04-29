@@ -6,6 +6,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+import os
 
 # 2. Third-Party Imports
 import ollama
@@ -15,7 +16,7 @@ root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
 
 # 4. Local Imports
-from utils import send_to_discord
+from utils import send_to_discord, OUTPUT_DIR
 
 # --- Script setup ---
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ Your task is to group the following provided repositories into 5 to 7 emerging t
 {repo_data_string}
 
 ### INSTRUCTIONS ###
-Write a 5-7 bullet point summary of the emerging trends found ONLY in the <repositories> data above. 
+Write a 3-5 bullet point summary of the emerging trends found ONLY in the <repositories> data above. 
 Focus on what technologies are gaining traction and what problems developers are trying to solve.
 You must extract the EXACT text from the <name> tags to prove your trends.
 
@@ -145,7 +146,7 @@ You MUST follow a two-step process:
 def main():
     today = datetime.now()
     today_str = today.strftime("%Y-%m-%d")
-    output_folder = Path("outputs")
+    output_folder = OUTPUT_DIR / "github" / "digests"
     output_folder.mkdir(parents=True, exist_ok=True)
     output_md = output_folder / f"past_day_digest_{today_str}.md"
 
@@ -154,10 +155,7 @@ def main():
     files_processed = 0
     for i in range(1):
         target_date = (today - timedelta(days=i)).strftime("%Y-%m-%d")
-        input_csv = (
-            output_folder / "read_me_insights" / f"repo_insights_daily_{target_date}.csv"
-        )
-
+        input_csv = OUTPUT_DIR / "github" / "read_me_insights" / f"repo_insights_daily_{target_date}.csv"
         if input_csv.exists():
             logger.info(f"  - Found data for {target_date}")
             files_processed += 1
@@ -208,7 +206,7 @@ def main():
             f.write(full_digest_content)
         logger.info(f"\n✅ Success! Your daily digest has been saved locally to {output_md}")
         msg1 = f"**📊 {today_str} GitHub Trending Digest**\n\n{summary}"
-        DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496808041428025465/0stNNhf2EHyjNld8vhD0oHJ9CF7rzLGM6rRCNlIG32ILLuCLFmIN1QC3cId7ZZEizOzf"
+        DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
         github_avatar = "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
         send_to_discord(DISCORD_WEBHOOK_URL, msg1, username="Trending Repo Digest", avatar_url=github_avatar)
         time.sleep(1.5)

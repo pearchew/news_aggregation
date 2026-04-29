@@ -5,11 +5,16 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from dateutil import parser
+import sys
+from pathlib import Path
 
-# 1. Set up the environment
-output_dir = "outputs/sfc_papers"
-# This line creates the folder if it does not exist
-os.makedirs(output_dir, exist_ok=True)
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from utils import OUTPUT_DIR
+
+output_dir = OUTPUT_DIR / "website_scraping" / "sfc_papers"
+output_dir.mkdir(parents=True, exist_ok=True)
+    
 # Helper function to remove characters that are invalid in file paths
 def sanitize_filename(name):
     # Replaces < > : " / \ | ? * with a hyphen
@@ -17,8 +22,6 @@ def sanitize_filename(name):
     return clean_name.strip()
 
 def scrape_sfc(cutoff_date):
-    output_dir = "outputs/sfc_papers"
-    os.makedirs(output_dir, exist_ok=True)
     url = "https://www.sfc.hk/en/Published-resources/Research-papers"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
