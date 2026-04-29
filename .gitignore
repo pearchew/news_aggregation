@@ -1,12 +1,9 @@
-website_scraping_workflow/bis_research_papers
-website_scraping_workflow/cc_judge_insights
-website_scraping_workflow/hkma_annual_reports
-website_scraping_workflow/hkma_papers
-website_scraping_workflow/sfc_papers
-website_scraping_workflow/taylorwessing_insights
 hn_workflow/outputs
 github_workflow/outputs
 rag_db/paper_brain_db/*
 daily_digests.txt
 outputs/READMEs/*
 outputs/hn_insights/markdown/*
+website_scraping_workflow/outputs
+website_scraping_workflow/__pycache__
+__pycache__

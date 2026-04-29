@@ -4,12 +4,8 @@ import os
 import pandas as pd
 from pathlib import Path
 from pydantic import BaseModel, Field
-from llama_index.core import SimpleDirectoryReader, Settings, VectorStoreIndex, StorageContext
-from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core import SimpleDirectoryReader, SummaryIndex
 from llama_index.llms.ollama import Ollama
-from llama_index.embeddings.ollama import OllamaEmbedding
-from llama_index.vector_stores.chroma import ChromaVectorStore
-import chromadb
 
 logger = logging.getLogger(__name__)
 
@@ -54,22 +50,36 @@ class PaperInsights(BaseModel):
     insight_4: str = Field(description="The potential applications and who benefits.")
 
 
-def process_single_paper_no_rag(file_path, source_label):
-    """Processes a single file in isolation"""
+def process_single_paper_no_rag(file_path, source_label, model_name="qwen3:8b"):
+    """Processes a single file in isolation using a specified Ollama model."""
     prompt = "Analyze this specific document and extract the exact title and 4 linked findings. Do not hallucinate."
     
-    # 1. Load the document
+    # 1. Initialize the specific LLM requested by the function input
+    # Increasing the timeout is recommended for local models processing large documents
+    llm = Ollama(model=model_name, request_timeout=300.0) 
+    
+    # 2. Load the document
+    # SimpleDirectoryReader just extracts raw text strings from your PDFs or Markdown files
     documents = SimpleDirectoryReader(input_files=[str(file_path)]).load_data()
     
-    # --- THE FIX: CREATE A TEMPORARY IN-MEMORY INDEX ---
-    # We do NOT pass the storage_context here. This forces the AI to ONLY look at this one file.
-    temp_index = VectorStoreIndex.from_documents(documents)
+    # 3. Create a SummaryIndex (Simplified from VectorStoreIndex)
+    # By putting the document into a SummaryIndex (formerly called a ListIndex), you are explicitly telling the framework: 
+    # "Do not try to search for the most relevant keywords. Read every single chunk of this document sequentially and 
+    # summarize it." The index manages the complex task of passing those chunks to the LLM one by one and combining 
+    # the answers into your final 4 structured insights.
+    temp_index = SummaryIndex.from_documents(documents)
     
-    # 2. Extract Structured Data from the isolated file
-    query_engine = temp_index.as_query_engine(output_cls=PaperInsights, response_mode="tree_summarize")
+    # 4. Extract Structured Data
+    # Pass the llm explicitly to the query engine to avoid relying on global Settings
+    query_engine = temp_index.as_query_engine(
+        llm=llm,
+        output_cls=PaperInsights, 
+        response_mode="tree_summarize"
+    )
+    
     response = query_engine.query(prompt)
     
-    # 3. Prepare metadata
+    # 5. Prepare metadata
     data_dict = response.response.model_dump()
     data_dict['source_org'] = source_label
     data_dict['file_name'] = file_path.name
