@@ -1,1 +1,11 @@
+# Simplified pycache rules
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+venv/
+.venv/
+
 outputs
