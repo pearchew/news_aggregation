@@ -3,7 +3,7 @@ import requests
 import os
 import pandas as pd
 from pathlib import Path
-from dotenv import load_dotenv # <-- NEW
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from llama_index.core import SimpleDirectoryReader, SummaryIndex
 from llama_index.llms.ollama import Ollama
@@ -51,36 +51,26 @@ def send_to_discord(webhook_url: str, content: str, username: str = "Digest Bot"
 
 class PaperInsights(BaseModel):
     paper_title: str = Field(description="The exact title of the research paper.")
-    insight_1: str = Field(description="1-2 sentences to capture the overarching conclusion of the paper and specific findings")
-    insight_2: str = Field(description="1-2 sentences to capture the effects this paper has on policy or economics and why it matters.")
-    insight_3: str = Field(description="1-2 sentences to capture the method used to arrive at the findings, and any unique approaches taken by the authors.")
-    insight_4: str = Field(description="1-2 sentences to capture the potential applications and who benefits from the findings.")
-
+    summary: str = Field(description="A comprehensive and cohesive paragraph summarizing the paper. It should smoothly connect the conclusion, its impact on policy/economics/technology, the methodology used, and potential applications.")
 
 def process_single_paper_no_rag(file_path, source_label, model_name="qwen3:8b"):
     """Processes a single file in isolation using a specified Ollama model."""
-    prompt = "Analyze this specific document and extract the exact title and 4 linked findings. Do not hallucinate."
+    # Update the prompt to ask for a cohesive paragraph
+    prompt = "Analyze this specific document and extract the exact title and a comprehensive, cohesive paragraph summarizing the paper's findings, methodology, and impact. Do not hallucinate."
     
     # 1. Initialize the specific LLM requested by the function input
-    # Increasing the timeout is recommended for local models processing large documents
     llm = Ollama(model=model_name, request_timeout=300.0) 
     
     # 2. Load the document
-    # SimpleDirectoryReader just extracts raw text strings from your PDFs or Markdown files
     documents = SimpleDirectoryReader(input_files=[str(file_path)]).load_data()
     
-    # 3. Create a SummaryIndex (Simplified from VectorStoreIndex)
-    # By putting the document into a SummaryIndex (formerly called a ListIndex), you are explicitly telling the framework: 
-    # "Do not try to search for the most relevant keywords. Read every single chunk of this document sequentially and 
-    # summarize it." The index manages the complex task of passing those chunks to the LLM one by one and combining 
-    # the answers into your final 4 structured insights.
+    # 3. Create a SummaryIndex
     temp_index = SummaryIndex.from_documents(documents)
     
     # 4. Extract Structured Data
-    # Pass the llm explicitly to the query engine to avoid relying on global Settings
     query_engine = temp_index.as_query_engine(
         llm=llm,
-        output_cls=PaperInsights, 
+        output_cls=PaperInsights, # Still uses our schema to separate the title from the body
         response_mode="tree_summarize"
     )
     

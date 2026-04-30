@@ -63,11 +63,8 @@ def main():
 
             # 3. Format the Discord Message
             discord_msg = f"## 📄 New Research Alert: {source_name}\n"
-            discord_msg += f"**Title:** {insights['paper_title']}\n"
-            discord_msg += f"**1. Conclusion:**{insights['insight_1']}\n"
-            discord_msg += f"**2. Impact:**{insights['insight_2']}\n"
-            discord_msg += f"**3. Methodology:**{insights['insight_3']}\n"
-            discord_msg += f"**4. Applications:**{insights['insight_4']}\n"
+            discord_msg += f"**Title:** {insights['paper_title']}\n\n"
+            discord_msg += f"**Summary:** {insights['summary']}\n"
 
             # 4. Send to Discord
             send_to_discord(
