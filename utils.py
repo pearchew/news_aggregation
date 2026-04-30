@@ -51,10 +51,10 @@ def send_to_discord(webhook_url: str, content: str, username: str = "Digest Bot"
 
 class PaperInsights(BaseModel):
     paper_title: str = Field(description="The exact title of the research paper.")
-    insight_1: str = Field(description="The overarching conclusion of the paper and speific findings")
-    insight_2: str = Field(description="The effects this paper has on policy or economics and why it matters.")
-    insight_3: str = Field(description="The method use to arrive at the findings, and any unique approaches taken by the authors.")
-    insight_4: str = Field(description="The potential applications and who benefits from the findings.")
+    insight_1: str = Field(description="1-2 sentences to capture the overarching conclusion of the paper and specific findings")
+    insight_2: str = Field(description="1-2 sentences to capture the effects this paper has on policy or economics and why it matters.")
+    insight_3: str = Field(description="1-2 sentences to capture the method used to arrive at the findings, and any unique approaches taken by the authors.")
+    insight_4: str = Field(description="1-2 sentences to capture the potential applications and who benefits from the findings.")
 
 
 def process_single_paper_no_rag(file_path, source_label, model_name="qwen3:8b"):
