@@ -21,11 +21,12 @@ def sanitize_filename(filename):
     clean_name = re.sub(r'\s+', '-', clean_name.strip())
     return clean_name
 
-def scrape_sequoia(cutoff_date):
-    target_url = "https://sequoiacap.com/stories/"
+def scrape_sequoia_perspectives(cutoff_date):
+    # Updated URL to target the specific category
+    target_url = "https://sequoiacap.com/stories/?_story-category=perspective"
     
     # Create the structured download folder
-    download_folder = OUTPUT_DIR / "website_scraping" / "sequoia_articles"
+    download_folder = OUTPUT_DIR / "website_scraping" / "sequoia_perspectives"
     download_folder.mkdir(parents=True, exist_ok=True)
     
     headers = {
@@ -49,7 +50,7 @@ def scrape_sequoia(cutoff_date):
         return new_downloads
 
     total_articles = len(articles)
-    print(f"Found {total_articles} articles on the main page. Starting scan...\n")
+    print(f"Found {total_articles} articles on the Perspective page. Starting scan...\n")
 
     for index, article in enumerate(articles, 1):
         link = article.get("href")
@@ -74,14 +75,15 @@ def scrape_sequoia(cutoff_date):
             time.sleep(1)
             continue
 
-        # Look for standard WordPress/SEO publication date meta tags
-        date_meta = article_soup.find("meta", property="article:published_time")
-        pub_date_str = date_meta.get("content") if date_meta else ""
+        # Look for the specific <time> tag provided in your HTML snippet
+        time_tag = article_soup.find("time", class_="wp-block-mg-post-date")
         
-        if not pub_date_str:
-            # Fallback to <time> tag if meta property is missing
-            time_tag = article_soup.find("time", class_="entry-date")
-            pub_date_str = time_tag.get("datetime") if time_tag else ""
+        # Fallback to meta tags if the specific time class isn't found
+        if not time_tag:
+            date_meta = article_soup.find("meta", property="article:published_time")
+            pub_date_str = date_meta.get("content") if date_meta else ""
+        else:
+            pub_date_str = time_tag.get("datetime")
 
         if not pub_date_str:
             print(f"   ⏭️ Skipping (No precise date found)")
@@ -90,7 +92,7 @@ def scrape_sequoia(cutoff_date):
 
         try:
             pub_date = parser.parse(pub_date_str, fuzzy=True)
-            # Strip timezone info if present so it can be compared cleanly
+            # Strip timezone info if present so it can be compared cleanly against the cutoff_date
             if pub_date.tzinfo is not None:
                 pub_date = pub_date.replace(tzinfo=None)
         except ValueError:
@@ -98,7 +100,7 @@ def scrape_sequoia(cutoff_date):
             time.sleep(1)
             continue
 
-        # HARD STOP: Break the loop if the article is older than the cutoff date
+        # HARD STOP: Break the loop entirely if the article is older than the cutoff date
         if pub_date < cutoff_date:
             print(f"\n🛑 Reached an article published on {pub_date.strftime('%Y-%m-%d')}, which is older than the cutoff date ({cutoff_date.strftime('%Y-%m-%d')}). Stopping scrape.")
             break
@@ -116,13 +118,17 @@ def scrape_sequoia(cutoff_date):
 
         print(f"   📥 Downloading: '{filename}'...")
         
-        # Find main article content block
-        content_container = article_soup.find('article') or article_soup.find('main') or article_soup.body
+        # Target the specific container for the text body to avoid hero banners and social sharing sections
+        content_container = article_soup.find('section', class_="wp-block-mg-post-container")
+        
+        # Fallback to broader tags if the specific section class is missing
+        if not content_container:
+            content_container = article_soup.find('article') or article_soup.find('main') or article_soup.body
         
         if content_container:
-            # Convert to markdown
+            # Convert the clean HTML directly to markdown
             md_content = markdownify(str(content_container), heading_style="ATX")
-            final_md = f"# {raw_title}\n\n**Published:** {pub_date_str}\n**Source:** {link}\n\n---\n\n{md_content}"
+            final_md = f"# {raw_title}\n\n**Published:** {pub_date.strftime('%B %d, %Y')}\n**Source:** {link}\n\n---\n\n{md_content}"
             
             try:
                 with open(filepath, 'w', encoding='utf-8') as f:

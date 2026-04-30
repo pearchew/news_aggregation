@@ -12,6 +12,9 @@ from website_scraping_workflow.hkma_annual import scrape_hkma_annual
 from website_scraping_workflow.hkma_research import scrape_hkma_research
 from website_scraping_workflow.sfc import scrape_sfc
 from website_scraping_workflow.taylor_wessing_md import scrape_taylor_wessing
+from website_scraping_workflow.sequoia import scrape_sequoia
+from website_scraping_workflow.sequoia_perspective import scrape_sequoia_perspectives
+from website_scraping_workflow.sequoia_news import scrape_sequoia_news
 import os
 # Load from the environment variables (loaded by main.py)
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
@@ -25,7 +28,7 @@ from utils import process_single_paper_no_rag, send_to_discord
 def main():
     print("Starting Autonomous Research Aggregator...")
     
-    # Define the 7-day cutoff window
+    # Define the 1-day cutoff window
     # Ensure timezone awareness matches the server you run this on
     cutoff_date = datetime.now() - timedelta(days=7)
     
@@ -37,6 +40,9 @@ def main():
         ("HKMA Research", scrape_hkma_research),
         ("SFC Research", scrape_sfc),
         ("Taylor Wessing Insights", scrape_taylor_wessing),
+        ("Sequoia Research", scrape_sequoia),
+        ("Sequoia Perspectives", scrape_sequoia_perspectives),
+        ("Sequoia News", scrape_sequoia_news)
     ]
 
     all_new_files = []
