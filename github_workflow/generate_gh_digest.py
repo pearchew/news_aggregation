@@ -27,7 +27,7 @@ def generate_executive_summary(repo_data_string, model_name="gemma4:e4b"):
     Sends the aggregated repository data to Ollama to generate a weekly trend summary.
     """
     prompt = f"""You are a senior technical analyst providing a weekly digest to a CTO. 
-Your task is to group the following provided repositories into 5 to 7 emerging technology trends.
+Your task is to group the following provided repositories into 5 emerging technology trends.
 
 ### TRENDING REPOSITORIES ###
 {repo_data_string}
