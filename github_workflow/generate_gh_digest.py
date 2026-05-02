@@ -36,6 +36,7 @@ Your task is to group the following provided repositories into 5 emerging techno
 Write a 5 bullet point summary of the emerging trends found ONLY in the <repositories> data above. 
 Focus on what technologies are gaining traction and what problems developers are trying to solve.
 You must extract the EXACT text from the <name> tags to prove your trends.
+Limit the total length of your summary to 2000 characters. Be concise, insightful, and directly reference the repository names in your trend analysis.
 
 You MUST follow a two-step process:
 1. First, create a <think> block. Inside this block, analyze the data, group the repositories by trend, and verify that you have their exact <name> tags correct.
