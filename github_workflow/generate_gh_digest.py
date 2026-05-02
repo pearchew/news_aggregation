@@ -33,19 +33,13 @@ Your task is to group the following provided repositories into 5 to 7 emerging t
 {repo_data_string}
 
 ### INSTRUCTIONS ###
-Write a 3-5 bullet point summary of the emerging trends found ONLY in the <repositories> data above. 
+Write a 5 bullet point summary of the emerging trends found ONLY in the <repositories> data above. 
 Focus on what technologies are gaining traction and what problems developers are trying to solve.
 You must extract the EXACT text from the <name> tags to prove your trends.
 
 You MUST follow a two-step process:
 1. First, create a <think> block. Inside this block, analyze the data, group the repositories by trend, and verify that you have their exact <name> tags correct.
 2. After the </think> block closes, output your final summary using this EXACT nested format:
-
-- **[Trend Name]**
-  - Repositories: [name1, name2]
-  - Summary: [1-2 sentences describing the trend based on the data]
-
-You MUST use this EXACT nested format for your output. List the repositories BEFORE writing the summary:
 
 - **[Trend Name]**
   - Repositories: [name1, name2]
